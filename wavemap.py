@@ -1,5 +1,6 @@
 from struct import unpack_from, calcsize
 import numpy as np
+import sys
 
 __all__ = 'RawMap', 'WaveMap', 'QUIET'
 __version__ = '0.8.0'
@@ -84,8 +85,11 @@ class WaveMap(RawMap):
         if wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
             raise ValueError(f'Cannot mmap wBitsPerSample={wBitsPerSample}')
 
-        type_name = ('int', 'float')[is_float]
-        dtype = f'{type_name}{wBitsPerSample}'
+        if wBitsPerSample == 8:
+            dtype = 'uint8'
+        else:
+            type_name = ('int', 'float')[is_float]
+            dtype = f'{type_name}{wBitsPerSample}'
 
         assert np.dtype(dtype).itemsize == wBitsPerSample // 8
 
@@ -201,8 +205,6 @@ def _chunks(fp):
 
 
 if __name__ == '__main__':
-    import sys
-
     for i in sys.argv[1:]:
         mw = WaveMap(i)
         print(mw.shape)
