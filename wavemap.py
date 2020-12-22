@@ -2,6 +2,7 @@ from struct import unpack_from, calcsize
 import numpy as np
 
 __all__ = 'RawMap', 'WaveMap', 'QUIET'
+__version__ = '0.8.0'
 
 QUIET = False
 
@@ -12,7 +13,7 @@ def error(*args, **kwargs):
 
 
 class RawMap(np.memmap):
-    """"Memory map raw audio data from a disk file"""
+    """"Memory map raw audio data from a disk file into a numpy matrix"""
 
     def __new__(
         cls,
@@ -57,15 +58,13 @@ class RawMap(np.memmap):
         return self
 
     @property
-    def length(self):
-        return self.shape[self.ndim > 1 and self.order != 'C']
-
-    @property
     def duration(self):
-        return self.length / self.sample_rate
+        return max(self.shape) / self.sample_rate
 
 
 class WaveMap(RawMap):
+    """"Memory-map a wave file into a numpy matrix"""
+
     def __new__(cls, filename, mode='r', order='C', always_2d=False):
         begin, end, fmt = _metadata(filename)
 
