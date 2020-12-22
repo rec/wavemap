@@ -1,3 +1,4 @@
-# wavemap
+wavemap
+-------------
 
 Memory map WAVE files
