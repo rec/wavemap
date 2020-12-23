@@ -21,7 +21,6 @@ class RawMap(np.memmap):
         filename,
         dtype,
         channels,
-        sample_rate,
         begin=0,
         end=None,
         mode='r',
@@ -52,7 +51,6 @@ class RawMap(np.memmap):
 
         self = np.memmap.__new__(cls, filename, dt, mode, begin, shape, order)
 
-        self.sample_rate = sample_rate
         self.order = order
         self.channnels = channels
 
@@ -98,7 +96,6 @@ class WaveMap(RawMap):
             filename,
             dtype,
             nChannels,
-            nSamplesPerSec,
             begin,
             end,
             mode,
@@ -107,6 +104,7 @@ class WaveMap(RawMap):
         )
         self.begin = begin
         self.end = end
+        self.sample_rate = nSamplesPerSec
 
         return self
 
