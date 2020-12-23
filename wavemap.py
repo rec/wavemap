@@ -6,6 +6,7 @@ __all__ = 'RawMap', 'WaveMap', 'QUIET'
 __version__ = '0.8.0'
 
 QUIET = False
+BAD_TAG_ADJUSTMENT = True
 
 
 def error(*args, **kwargs):
@@ -26,6 +27,7 @@ class RawMap(np.memmap):
         mode='r',
         order='C',
         always_2d=False,
+        error=error,
     ):
         if end is None:
             with open(filename, 'rb') as fp:
@@ -38,7 +40,7 @@ class RawMap(np.memmap):
         frames = (end - begin) // bytes_per_frame
         extra = (end - begin) % bytes_per_frame
         if extra:
-            error(f'Extra bytes {extra}')
+            error and error(f'{extra} bytes after end-of-frame discarded')
 
         if channels == 1 and not always_2d:
             shape = (frames,)
@@ -64,8 +66,10 @@ class RawMap(np.memmap):
 class WaveMap(RawMap):
     """"Memory-map a wave file into a numpy matrix"""
 
-    def __new__(cls, filename, mode='r', order='C', always_2d=False):
-        begin, end, fmt = _metadata(filename)
+    def __new__(
+        cls, filename, mode='r', order='C', always_2d=False, error=error
+    ):
+        begin, end, fmt = _metadata(filename, error)
 
         (
             wFormatTag,
@@ -101,6 +105,7 @@ class WaveMap(RawMap):
             mode,
             order,
             always_2d,
+            error,
         )
         self.begin = begin
         self.end = end
@@ -131,11 +136,11 @@ BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
 # https://stackoverflow.com/a/34128171/43839
 
 
-def _metadata(filename):
+def _metadata(filename, error):
     begin = end = fmt = None
 
     with open(filename, 'rb') as fp:
-        (tag, _, _), *chunks = _chunks(fp)
+        (tag, _, _), *chunks = _chunks(fp, error)
         if tag != b'WAVE':
             raise ValueError(f'Not a WAVE file: {tag}')
 
@@ -168,7 +173,7 @@ def _metadata(filename):
     return begin, end, fmt
 
 
-def _chunks(fp):
+def _chunks(fp, error):
     file_size = fp.seek(-1, 2)
     fp.seek(0)
 
@@ -178,7 +183,13 @@ def _chunks(fp):
     def read_tag():
         tag = read_one('4s')
         if tag and not tag.rstrip().isalnum():
+            if BAD_TAG_ADJUSTMENT and tag[0] == 0:
+                tag = tag[1:] + fp.read(1)
+                if tag.rstrip().isalnum():
+                    return tag
+
             error(f'Dubious tag {tag}')
+
         return tag
 
     def read_int():
@@ -197,7 +208,8 @@ def _chunks(fp):
         fp.seek(chunk_size, 1)
         end = fp.tell()
         if end > file_size:
-            error(f'Incomplete chunk: {end} > {file_size}')
+            if end > file_size + 1:
+                error(f'Incomplete chunk: {end} > {file_size + 1}')
             end = file_size
         yield tag, begin, end
 
