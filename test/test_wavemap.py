@@ -43,12 +43,12 @@ class TestWaveMap(unittest.TestCase):
         ]
         assert lengths == [23494, 23493, 23495, 23494, 23497, 29016, 29017]
 
-    def test_error(self):
-        errors = []
+    def test_warnings(self):
+        warnings = []
         for w in WAVE_FILES:
             if w.stem in READABLE:
-                errors.append([])
-                wavemap.WaveMap(w, error=errors[-1].append)
+                warnings.append([])
+                wavemap.WaveMap(w, warn=warnings[-1].append)
 
         expected = [
             [],
@@ -60,4 +60,4 @@ class TestWaveMap(unittest.TestCase):
             ['3 bytes after end-of-frame discarded'],
         ]
 
-        assert errors == expected
+        assert warnings == expected

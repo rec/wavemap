@@ -9,7 +9,7 @@ QUIET = False
 BAD_TAG_ADJUSTMENT = True
 
 
-def error(*args, **kwargs):
+def warn(*args, **kwargs):
     if not QUIET:
         print(*args, **kwargs, file=sys.stderr)
 
@@ -27,7 +27,7 @@ class RawMap(np.memmap):
         mode='r',
         order='C',
         always_2d=False,
-        error=error,
+        warn=warn,
     ):
         if end is None:
             with open(filename, 'rb') as fp:
@@ -39,8 +39,8 @@ class RawMap(np.memmap):
 
         frames = (end - begin) // bytes_per_frame
         extra = (end - begin) % bytes_per_frame
-        if extra:
-            error and error(f'{extra} bytes after end-of-frame discarded')
+        if extra and warn:
+            warn(f'{extra} bytes after end-of-frame discarded')
 
         if channels == 1 and not always_2d:
             shape = (frames,)
@@ -67,9 +67,9 @@ class WaveMap(RawMap):
     """"Memory-map a wave file into a numpy matrix"""
 
     def __new__(
-        cls, filename, mode='r', order='C', always_2d=False, error=error
+        cls, filename, mode='r', order='C', always_2d=False, warn=warn
     ):
-        begin, end, fmt = _metadata(filename, error)
+        begin, end, fmt = _metadata(filename, warn)
 
         (
             wFormatTag,
@@ -105,7 +105,7 @@ class WaveMap(RawMap):
             mode,
             order,
             always_2d,
-            error,
+            warn,
         )
         self.begin = begin
         self.end = end
@@ -136,11 +136,11 @@ BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
 # https://stackoverflow.com/a/34128171/43839
 
 
-def _metadata(filename, error):
+def _metadata(filename, warn):
     begin = end = fmt = None
 
     with open(filename, 'rb') as fp:
-        (tag, _, _), *chunks = _chunks(fp, error)
+        (tag, _, _), *chunks = _chunks(fp, warn)
         if tag != b'WAVE':
             raise ValueError(f'Not a WAVE file: {tag}')
 
@@ -151,12 +151,12 @@ def _metadata(filename, error):
                     fp.seek(b)
                     fmt = fp.read(e - b)
                 else:
-                    error('fmt chunk after first ignored')
+                    warn('fmt chunk after first ignored')
             elif tag == b'data':
                 if not (begin or end):
                     begin, end = b, e
                 else:
-                    error('data chunk after first ignored')
+                    warn('data chunk after first ignored')
 
     if begin is None:
         raise ValueError('No data chunk found')
@@ -173,7 +173,7 @@ def _metadata(filename, error):
     return begin, end, fmt
 
 
-def _chunks(fp, error):
+def _chunks(fp, warn):
     file_size = fp.seek(-1, 2)
     fp.seek(0)
 
@@ -188,7 +188,7 @@ def _chunks(fp, error):
                 if tag.rstrip().isalnum():
                     return tag
 
-            error(f'Dubious tag {tag}')
+            warn(f'Dubious tag {tag}')
 
         return tag
 
@@ -209,7 +209,7 @@ def _chunks(fp, error):
         end = fp.tell()
         if end > file_size:
             if end > file_size + 1:
-                error(f'Incomplete chunk: {end} > {file_size + 1}')
+                warn(f'Incomplete chunk: {end} > {file_size + 1}')
             end = file_size
         yield tag, begin, end
 

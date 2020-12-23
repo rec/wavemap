@@ -7,7 +7,7 @@ source = wavemap
 
 [report]
 
-fail_under = 85
+fail_under = 83
 skip_covered = True
 
 exclude_lines =
