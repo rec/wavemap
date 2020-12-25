@@ -101,3 +101,41 @@ class TestWaveWrite(unittest.TestCase):
         (s2,) = struct.unpack('<I', b1[4:8])
         assert s1 == 94174
         assert s2 == 94008
+
+    def test_int(self):
+        for filename in WAVE_FILES:
+            if not ('int' in filename.name and filename.name in READABLE):
+                continue
+            wm = wavemap.WaveMap(filename)
+
+            tf1 = Path(filename.name)
+            wm1 = wavemap.new_like(tf1, wm)
+            assert_array_equal(wm, wm1)
+            wm1.flush()
+
+            tf2 = Path('2-' + filename.name)
+            wm2 = wavemap.new_like(tf2, wm)
+            assert_array_equal(wm, wm2)
+            wm2.flush()
+
+            b, b1, b2 = (
+                filename.read_bytes(),
+                tf1.read_bytes(),
+                tf2.read_bytes(),
+            )
+            assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
+            assert b1 == b2
+            assert b
+
+            sb = b[: len(b2)]
+
+            assert sb[:4] == b1[:4]
+            assert sb[4:8] != b1[4:8]
+            assert sb[8:] == b1[8:]
+
+            import struct
+
+            (s1,) = struct.unpack('<I', sb[4:8])
+            (s2,) = struct.unpack('<I', b1[4:8])
+            assert 166 <= s1 - s2 <= 168
+            # What's going on here??
