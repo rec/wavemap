@@ -158,31 +158,35 @@ class WaveWriteMap(RawMap):
     """"Memory-map a new wave file"""
 
     @classmethod
-    def new_like(cls, filename, arr, sample_rate=None, warn=warn):
+    def new_like(cls, filename, arr, sample_rate=None, length=None, warn=warn):
         sample_rate = sample_rate or getattr(arr, 'sample_rate', None)
         if not sample_rate:
             raise ValueError('sample_rate must be set')
 
-        wm = cls(filename, arr.dtype, arr.shape, sample_rate, warn)
+        wm = cls(filename, arr.dtype, arr.shape, sample_rate, length, warn)
         np.copyto(dst=wm, src=arr, casting='no')
         return wm
 
-    def __new__(cls, filename, dtype, shape, sample_rate, warn=warn):
+    def __new__(
+        cls, filename, dtype, shape, sample_rate, length=None, warn=warn
+    ):
         dt = np.dtype(dtype)
         nChannels = 1 if len(shape) == 1 else min(shape)
         nSamples = max(shape)
         size = nChannels * nSamples * dt.itemsize
+        cksize = size + size % 2
 
         if issubclass(dt.type, numbers.Integral):
             wFormatTag = WAVE_FORMAT_PCM
             fmt_cksize = 16
             fact_cksize = 0
+            cksize += 36
         else:
             wFormatTag = WAVE_FORMAT_IEEE_FLOAT
             fmt_cksize = 18
             fact_cksize = 12
+            cksize += 48
 
-        cksize = size + size % 2 + fmt_cksize + fact_cksize
         wBitsPerSample = dt.itemsize * 8
         nAvgBytesPerSec = sample_rate * dt.itemsize * nChannels
         nBlockAlign = dt.itemsize * nChannels
@@ -213,6 +217,7 @@ class WaveWriteMap(RawMap):
 
         chunk(b'data', size)
         offset = fp.tell()
+        assert offset == len(fp.getvalue())
 
         s1, *s2 = shape
         s2 = s2 and s2[0] or 1
@@ -276,6 +281,7 @@ def _metadata(filename, warn):
                     warn('fmt chunk after first ignored')
             elif tag == b'data':
                 if not (begin or end):
+                    b += CHUNK_FORMAT.size
                     begin, end = b, e
                 else:
                     warn('data chunk after first ignored')

@@ -40,7 +40,7 @@ class TestWaveMap(unittest.TestCase):
             'float32',
             'int16',
         ]
-        assert lengths == [23494, 23493, 23495, 23494, 23497, 29016, 29017]
+        assert lengths == [23493, 23493, 23493, 23493, 23493, 29015, 29015]
 
     def test_warnings(self):
         warnings = []
@@ -51,7 +51,7 @@ class TestWaveMap(unittest.TestCase):
 
         expected = [
             [],
-            ['8 bytes after end-of-frame discarded'],
+            [],
             [],
             [],
             [],
@@ -72,7 +72,7 @@ class TestWaveWrite(unittest.TestCase):
     def test_write(self):
         filename = next(w for w in WAVE_FILES if 'int16' in w.stem)
         wm = wavemap.WaveMap(filename)
-        assert wm.shape == (23495, 2)
+        assert wm.shape == (23493, 2)
 
         tf1 = Path(filename.name)
         wm1 = wavemap.new_like(tf1, wm)
@@ -88,3 +88,16 @@ class TestWaveWrite(unittest.TestCase):
         assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
         assert b1 == b2
         assert b
+
+        sb = b[: len(b2)]
+
+        assert sb[:4] == b1[:4]
+        assert sb[4:8] != b1[4:8]
+        assert sb[8:] == b1[8:]
+
+        import struct
+
+        (s1,) = struct.unpack('<I', sb[4:8])
+        (s2,) = struct.unpack('<I', b1[4:8])
+        assert s1 == 94174
+        assert s2 == 94008
