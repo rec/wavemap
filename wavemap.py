@@ -1,3 +1,4 @@
+import io
 import numbers
 import numpy as np
 import struct
@@ -156,6 +157,16 @@ class WaveReadMap(RawMap):
 class WaveWriteMap(RawMap):
     """"Memory-map a new wave file"""
 
+    @classmethod
+    def new_like(cls, filename, arr, sample_rate=None, warn=warn):
+        sample_rate = sample_rate or getattr(arr, 'sample_rate', None)
+        if not sample_rate:
+            raise ValueError('sample_rate must be set')
+
+        wm = cls(filename, arr.dtype, arr.shape, sample_rate, warn)
+        np.copyto(dst=wm, src=arr, casting='no')
+        return wm
+
     def __new__(cls, filename, dtype, shape, sample_rate, warn=warn):
         dt = np.dtype(dtype)
         nChannels = 1 if len(shape) == 1 else min(shape)
@@ -176,32 +187,32 @@ class WaveWriteMap(RawMap):
         nAvgBytesPerSec = sample_rate * dt.itemsize * nChannels
         nBlockAlign = dt.itemsize * nChannels
 
-        with open(filename, 'wb') as fp:
+        fp = io.BytesIO()
 
-            def chunk(name, size):
-                fp.write(CHUNK_FORMAT.pack(name, size))
+        def chunk(name, size):
+            fp.write(CHUNK_FORMAT.pack(name, size))
 
-            chunk(b'RIFF', cksize)
-            fp.write(b'WAVE')
+        chunk(b'RIFF', cksize)
+        fp.write(b'WAVE')
 
-            chunk(b'fmt ', fmt_cksize)
-            fp.write(
-                FMT_FORMAT.pack(
-                    wFormatTag,
-                    nChannels,
-                    sample_rate,
-                    nAvgBytesPerSec,
-                    nBlockAlign,
-                    wBitsPerSample,
-                )
+        chunk(b'fmt ', fmt_cksize)
+        fp.write(
+            FMT_FORMAT.pack(
+                wFormatTag,
+                nChannels,
+                sample_rate,
+                nAvgBytesPerSec,
+                nBlockAlign,
+                wBitsPerSample,
             )
+        )
 
-            if fact_cksize:
-                fp.write(struct.pack('<H', 0))
-                chunk(b'fact', 4)
+        if fact_cksize:
+            fp.write(struct.pack('<H', 0))
+            chunk(b'fact', 4)
 
-            chunk(b'data', size)
-            offset = fp.tell()
+        chunk(b'data', size)
+        offset = fp.tell()
 
         s1, *s2 = shape
         s2 = s2 and s2[0] or 1
@@ -220,10 +231,14 @@ class WaveWriteMap(RawMap):
             False,
             warn,
         )
+        self._mmap[:offset] = fp.getvalue()
         self.sample_rate = sample_rate
 
         return self
         # TODO: handle that extra pad byte again!
+
+
+new_like = WaveWriteMap.new_like
 
 
 def WaveMap(filename, mode='r', *args, **kwargs):

@@ -1,3 +1,4 @@
+from numpy.testing import assert_array_equal
 from pathlib import Path
 import stroll
 import tdir
@@ -69,6 +70,21 @@ class TestWaveMap(unittest.TestCase):
 @tdir
 class TestWaveWrite(unittest.TestCase):
     def test_write(self):
-        int16_wav = next(w for w in WAVE_FILES if 'int16' in w.stem)
-        wm = wavemap.WaveMap(int16_wav)
+        filename = next(w for w in WAVE_FILES if 'int16' in w.stem)
+        wm = wavemap.WaveMap(filename)
         assert wm.shape == (23495, 2)
+
+        tf1 = Path(filename.name)
+        wm1 = wavemap.new_like(tf1, wm)
+        assert_array_equal(wm, wm1)
+        wm1.flush()
+
+        tf2 = Path('2-' + filename.name)
+        wm2 = wavemap.new_like(tf2, wm)
+        assert_array_equal(wm, wm2)
+        wm2.flush()
+
+        b, b1, b2 = filename.read_bytes(), tf1.read_bytes(), tf2.read_bytes()
+        assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
+        assert b1 == b2
+        assert b
