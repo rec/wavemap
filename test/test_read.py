@@ -7,6 +7,7 @@ WAVE_FILES = list(stroll(Path(__file__).parent, suffix='.wav'))
 READABLE = [
     'Kick.wav',
     'Snare.wav',
+    'Tom.wav',
     'test-44100Hz-2ch-32bit-float-le.wav',
     'M1F1-float32-AFsp.wav',
     'M1F1-float64-AFsp.wav',
@@ -31,13 +32,12 @@ class TestWaveMap(unittest.TestCase):
         assert filenames == READABLE
         dtypes = [str(s.dtype) for s in success]
         lengths = [s.shape[0] for s in success]
-        assert len(failure) == 25
-        tom = next(j for i, j in failure if i == 'Tom')
-        assert tom == 'Weird fmt block'
+        assert len(failure) == 24
 
         assert dtypes == [
             'int16',
             'float32',
+            'int16',
             'float32',
             'float32',
             'float64',
@@ -50,6 +50,7 @@ class TestWaveMap(unittest.TestCase):
         assert lengths == [
             10482,
             3131,
+            10287,
             440,
             23493,
             23493,
@@ -70,6 +71,7 @@ class TestWaveMap(unittest.TestCase):
         expected = [
             [],
             [],
+            ['1 byte after end-of-frame discarded'],
             ['7 bytes after end-of-frame discarded'],
             [],
             [],

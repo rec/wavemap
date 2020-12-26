@@ -19,7 +19,7 @@ assert CHUNK_FORMAT.size == 8
 FMT_FORMAT = struct.Struct('<HHIIHH')
 assert FMT_FORMAT.size == 16
 
-FMT_BLOCK_LENGTHS = {16, 18, 40}
+FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 
 FLOAT_BITS_PER_SAMPLE = {32, 64}
 PCM_BITS_PER_SAMPLE = {8, 16, 32, 64}
@@ -80,7 +80,8 @@ class RawMap(np.memmap):
             frames = length // bytes_per_frame
             extra = length % bytes_per_frame
             if extra and warn:
-                warn(f'{extra} bytes after end-of-frame discarded')
+                s = '' if extra == 1 else 's'
+                warn(f'{extra} byte{s} after end-of-frame discarded')
 
             if channels == 1 and not always_2d:
                 shape = (frames,)
@@ -293,7 +294,8 @@ def _metadata(filename, warn):
         raise ValueError('No fmt chunk found')
 
     if len(fmt) not in FMT_BLOCK_LENGTHS:
-        raise ValueError('Weird fmt block')
+        warn(fmt)
+        raise ValueError(f'Weird fmt block length {len(fmt)}')
 
     if len(fmt) == 40:
         raise ValueError('Cannot read extensible format WAV files')
