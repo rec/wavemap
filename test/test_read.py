@@ -3,7 +3,7 @@ import stroll
 import unittest
 import wavemap
 
-WAVE_FILES = list(stroll(Path(__file__).parent, suffix='.wav'))
+WAVE_FILES = list(stroll(Path(__file__).parent / 'data', suffix='.wav'))
 READABLE = [
     'Kick.wav',
     'Snare.wav',
