@@ -4,7 +4,7 @@ import struct
 import sys
 
 __all__ = 'RawMap', 'WaveReadMap', 'WaveWriteMap', 'WaveMap'
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 
 # See http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
