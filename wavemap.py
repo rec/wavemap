@@ -1,3 +1,16 @@
+"""
+🌊 Memory map WAVE files into numpy arrays 🌊
+
+The actual samples from a WAVE file appear as entries in a numpy array.
+
+See documentation for numpy.memmap
+
+If you open the file in 'r+' mode, you can even rewrite the samples on
+disk that way.
+
+"""
+
+
 import io
 import numpy as np
 import struct
