@@ -1,5 +1,4 @@
 import io
-import numbers
 import numpy as np
 import struct
 import sys
@@ -177,7 +176,7 @@ class WaveWriteMap(RawMap):
         size = nChannels * nSamples * dt.itemsize
         cksize = size + size % 2
 
-        if issubclass(dt.type, numbers.Integral):
+        if issubclass(dt.type, np.integer):
             wFormatTag = WAVE_FORMAT_PCM
             fmt_cksize = 16
             fact_cksize = 0
@@ -297,7 +296,7 @@ def _metadata(filename, warn):
         warn(fmt)
         raise ValueError(f'Weird fmt block length {len(fmt)}')
 
-    if len(fmt) == 40:
+    if False and len(fmt) == 40:
         raise ValueError('Cannot read extensible format WAV files')
 
     return begin, end - begin, fmt
