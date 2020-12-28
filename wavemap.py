@@ -187,7 +187,7 @@ class WaveWriteMap(RawMap):
         nChannels = 1 if len(shape) == 1 else min(shape)
         nSamples = max(shape)
         size = nChannels * nSamples * dt.itemsize
-        cksize = size + size % 2
+        cksize = size + size % 2 + CHUNK_FORMAT.size
 
         if issubclass(dt.type, np.integer):
             wFormatTag = WAVE_FORMAT_PCM
