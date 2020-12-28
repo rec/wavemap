@@ -9,21 +9,8 @@ import wavemap
 class TestWaveWrite(unittest.TestCase):
     @tdir
     def test_write(self):
-        filename = next(w for w in WAVE_FILES if 'int16' in w.stem)
-        wm = wavemap.WaveMap(filename)
-        assert wm.shape == (23493, 2)
-
-        tf1 = Path(filename.name)
-        wm1 = wavemap.new_like(tf1, wm)
-        assert_array_equal(wm, wm1)
-        wm1.flush()
-
-        tf2 = Path('2-' + filename.name)
-        wm2 = wavemap.new_like(tf2, wm)
-        assert_array_equal(wm, wm2)
-        wm2.flush()
-
-        b, b1, b2 = filename.read_bytes(), tf1.read_bytes(), tf2.read_bytes()
+        wm, (b, b1, b2) = _find('int16')
+        assert wm[0].shape == (23493, 2)
         assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
         assert b1 == b2
         assert b
@@ -46,23 +33,7 @@ class TestWaveWrite(unittest.TestCase):
         for filename in WAVE_FILES:
             if not ('int' in filename.name and filename.name in READABLE):
                 continue
-            wm = wavemap.WaveMap(filename)
-
-            tf1 = Path(filename.name)
-            wm1 = wavemap.new_like(tf1, wm)
-            assert_array_equal(wm, wm1)
-            wm1.flush()
-
-            tf2 = Path('2-' + filename.name)
-            wm2 = wavemap.new_like(tf2, wm)
-            assert_array_equal(wm, wm2)
-            wm2.flush()
-
-            b, b1, b2 = (
-                filename.read_bytes(),
-                tf1.read_bytes(),
-                tf2.read_bytes(),
-            )
+            (wm, wm1, wm2), (b, b1, b2) = _test(filename)
             assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
             assert b1 == b2
             assert b
@@ -84,23 +55,7 @@ class TestWaveWrite(unittest.TestCase):
         for filename in WAVE_FILES:
             if not ('float' in filename.name and filename.name in READABLE):
                 continue
-            wm = wavemap.WaveMap(filename)
-
-            tf1 = Path(filename.name)
-            wm1 = wavemap.new_like(tf1, wm)
-            assert_array_equal(wm, wm1)
-            wm1.flush()
-
-            tf2 = Path('2-' + filename.name)
-            wm2 = wavemap.new_like(tf2, wm)
-            assert_array_equal(wm, wm2)
-            wm2.flush()
-
-            b, b1, b2 = (
-                filename.read_bytes(),
-                tf1.read_bytes(),
-                tf2.read_bytes(),
-            )
+            (wm, wm1, wm2), (b, b1, b2) = _test(filename)
             assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
             assert b1 == b2
             assert b
@@ -110,18 +65,25 @@ class TestWaveWrite(unittest.TestCase):
             # # Should be zero!
             # assert len(differs) == 1355, f'{len(sb)}'
 
-    @tdir(use_dir='.')
-    def NO_test_float_XXX(self):
-        filename = next(f for f in WAVE_FILES if 'fl' in f.name)
-        wm = wavemap.WaveMap(filename)
 
-        tf1 = Path(filename.name)
-        wm1 = wavemap.new_like(tf1, wm)
-        assert_array_equal(wm, wm1)
+def _find(s):
+    fname = next(w for w in WAVE_FILES if w.name in READABLE and s in w.name)
+    return _test(fname)
 
-        din, dout = filename.read_bytes(), tf1.read_bytes()
-        assert len(din) != len(dout)
-        diff = [(i, x, y) for i, (x, y) in enumerate(zip(din, dout)) if x != y]
-        print(len(din), len(dout))
-        print(diff[:200])
-        # assert len(diff) < 100
+
+def _test(filename):
+    wm1 = wavemap.WaveMap(filename)
+
+    localfile = Path(filename.name)
+    wm2 = wavemap.new_like(localfile, wm1)
+    assert_array_equal(wm1, wm2)
+    wm2.flush()
+
+    localfile2 = Path(f'{filename.stem}-2{filename.suffix}')
+    wm3 = wavemap.new_like(localfile2, wm2)
+    assert_array_equal(wm1, wm3)
+    wm3.flush()
+
+    wm = wm1, wm2, wm3
+    b = tuple(i.filename.read_bytes() for i in wm)
+    return wm, b
