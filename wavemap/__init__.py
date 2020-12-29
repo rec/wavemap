@@ -11,93 +11,15 @@ disk that way.
 """
 
 
+from . import constants
 from .raw import warn, RawMap
+from .read import ReadMap as WaveReadMap
 import io
 import numpy as np
 import struct
-import sys
 
 __all__ = 'RawMap', 'WaveReadMap', 'WaveWriteMap', 'WaveMap'
 __version__ = '0.9.1'
-
-# See http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
-
-WAVE_FORMAT_PCM = 0x0001
-WAVE_FORMAT_IEEE_FLOAT = 0x0003
-WAVE_FORMATS = WAVE_FORMAT_PCM, WAVE_FORMAT_IEEE_FLOAT
-
-FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
-
-FLOAT_BITS_PER_SAMPLE = {32, 64}
-PCM_BITS_PER_SAMPLE = {8, 16, 32, 64}
-
-BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
-
-# Making 24 bits work transparently is probably impossible:
-# https://stackoverflow.com/a/34128171/43839
-
-# Deal with a quirk in certain .WAV test files
-BAD_TAG_ADJUSTMENT = True
-
-
-CHUNK_FORMAT = struct.Struct('<4s I')
-FMT_FORMAT = struct.Struct('<HHIIHH')
-HEADER_FORMAT = struct.Struct('<4s I 4s 4s I H H I I H H')
-FMT_FORMAT = struct.Struct('<H H I I H H')
-
-assert CHUNK_FORMAT.size == 8
-assert FMT_FORMAT.size == 16
-assert HEADER_FORMAT.size == 36, f'{HEADER_FORMAT.size}'
-
-
-class WaveReadMap(RawMap):
-    """"Memory-map an existing wave file into a numpy matrix"""
-
-    def __new__(
-        cls, filename, mode='r', order=None, always_2d=False, warn=warn
-    ):
-        offset, length, fmt = _metadata(filename, warn)
-
-        (
-            wFormatTag,
-            nChannels,
-            nSamplesPerSec,
-            nAvgBytesPerSec,
-            nBlockAlign,
-            wBitsPerSample,
-        ) = FMT_FORMAT.unpack(fmt[: FMT_FORMAT.size])
-
-        if wFormatTag not in WAVE_FORMATS:
-            raise ValueError(f'Do not understand wFormatTag={wFormatTag}')
-
-        is_float = wFormatTag == WAVE_FORMAT_IEEE_FLOAT
-        if wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
-            raise ValueError(f'Cannot mmap wBitsPerSample={wBitsPerSample}')
-
-        if wBitsPerSample == 8:
-            dtype = 'uint8'
-        else:
-            type_name = ('int', 'float')[is_float]
-            dtype = f'{type_name}{wBitsPerSample}'
-
-        assert np.dtype(dtype).itemsize == wBitsPerSample // 8
-
-        self = RawMap.__new__(
-            cls,
-            filename,
-            dtype,
-            nChannels,
-            offset,
-            length,
-            mode,
-            None,
-            order,
-            always_2d,
-            warn,
-        )
-
-        self.sample_rate = nSamplesPerSec
-        return self
 
 
 class WaveWriteMap(RawMap):
@@ -123,12 +45,12 @@ class WaveWriteMap(RawMap):
         cksize = size + size % 2
 
         if issubclass(dt.type, np.integer):
-            wFormatTag = WAVE_FORMAT_PCM
+            wFormatTag = constants.WAVE_FORMAT_PCM
             fmt_cksize = 16
             fact_cksize = 0
             cksize += 36
         else:
-            wFormatTag = WAVE_FORMAT_IEEE_FLOAT
+            wFormatTag = constants.WAVE_FORMAT_IEEE_FLOAT
             fmt_cksize = 18
             fact_cksize = 12
             cksize += 48
@@ -140,14 +62,14 @@ class WaveWriteMap(RawMap):
         fp = io.BytesIO()
 
         def chunk(name, size):
-            fp.write(CHUNK_FORMAT.pack(name, size))
+            fp.write(constants.CHUNK_FORMAT.pack(name, size))
 
         chunk(b'RIFF', cksize)
         fp.write(b'WAVE')
 
         chunk(b'fmt ', fmt_cksize)
         fp.write(
-            FMT_FORMAT.pack(
+            constants.FMT_FORMAT.pack(
                 wFormatTag,
                 nChannels,
                 sample_rate,
@@ -206,100 +128,3 @@ def WaveMap(filename, mode='r', *args, **kwargs):
     if mode.startswith('w'):
         return WaveWriteMap(filename, *args, **kwargs)
     return WaveReadMap(filename, mode, *args, **kwargs)
-
-
-def _metadata(filename, warn):
-    begin = end = fmt = None
-
-    with open(filename, 'rb') as fp:
-        file_size = fp.seek(-1, 2)
-
-    with open(filename, 'rb') as fp:
-        (tag, b, e), *chunks = _chunks(fp, warn)
-        if tag != b'WAVE':
-            raise ValueError(f'Not a WAVE file: {tag}')
-        assert b == 0
-        print('chsize =', e)
-        print('file_size =', file_size)
-
-        for tag, b, e in chunks:
-            if tag == b'fmt ':
-                if not fmt:
-                    b += CHUNK_FORMAT.size
-                    fp.seek(b)
-                    fmt = fp.read(e - b)
-                else:
-                    warn('fmt chunk after first ignored')
-            elif tag == b'data':
-                if not (begin or end):
-                    b += CHUNK_FORMAT.size
-                    begin, end = b, e
-                else:
-                    warn('data chunk after first ignored')
-
-    if begin is None:
-        raise ValueError('No data chunk found')
-
-    if fmt is None:
-        raise ValueError('No fmt chunk found')
-
-    if len(fmt) not in FMT_BLOCK_LENGTHS:
-        error = f'Weird fmt block length {len(fmt)}'
-        warn(error)
-        if False:
-            raise ValueError(error)
-
-    return begin, end - begin, fmt
-
-
-def _chunks(fp, warn):
-    file_size = fp.seek(-1, 2)
-    fp.seek(0)
-
-    def read_one(format):
-        s = fp.read(struct.calcsize(format))
-        return struct.unpack('<' + format, s)[0]
-
-    def read_tag():
-        tag = read_one('4s')
-        if tag and not tag.rstrip().isalnum():
-            if BAD_TAG_ADJUSTMENT and tag[0] == 0:
-                tag = tag[1:] + fp.read(1)
-                if tag.rstrip().isalnum():
-                    return tag
-
-            warn(f'Dubious tag {tag}')
-
-        return tag
-
-    def read_int():
-        return read_one('I')
-
-    tag = read_tag()
-    if tag != b'RIFF':
-        raise ValueError('Not a RIFF file')
-
-    size = read_int()
-    yield read_tag(), 0, size
-
-    while fp.tell() < file_size:
-        begin = fp.tell()
-        tag, chunk_size = read_tag(), read_int()
-        fp.seek(chunk_size, 1)
-        end = fp.tell()
-        if end > file_size:
-            if end > file_size + 1:
-                warn(f'Incomplete chunk: {end} > {file_size + 1}')
-            end = file_size
-        yield tag, begin, end
-
-
-if __name__ == '__main__':
-    for i in sys.argv[1:]:
-        mw = WaveMap(i)
-        print(mw.shape)
-        print(mw.length)
-        print(mw.duration)
-        print(mw)
-
-    print('done')
