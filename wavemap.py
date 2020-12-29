@@ -10,7 +10,6 @@ disk that way.
 
 """
 
-
 import io
 import numpy as np
 import struct
@@ -25,12 +24,6 @@ WAVE_FORMAT_PCM = 0x0001
 WAVE_FORMAT_IEEE_FLOAT = 0x0003
 WAVE_FORMATS = WAVE_FORMAT_PCM, WAVE_FORMAT_IEEE_FLOAT
 
-CHUNK_FORMAT = struct.Struct('<4s I')
-assert CHUNK_FORMAT.size == 8
-
-FMT_FORMAT = struct.Struct('<HHIIHH')
-assert FMT_FORMAT.size == 16
-
 FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 
 FLOAT_BITS_PER_SAMPLE = {32, 64}
@@ -43,11 +36,6 @@ BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
 
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
-
-HEADER_FORMAT = struct.Struct('<4s I 4s 4s I H H I I H H')
-assert HEADER_FORMAT.size == 36, f'{HEADER_FORMAT.size}'
-
-FMT_FORMAT = struct.Struct('<H H I I H H')
 
 
 def warn(msg):
@@ -115,6 +103,16 @@ class RawMap(np.memmap):
     @property
     def duration(self):
         return max(self.shape) / self.sample_rate
+
+
+CHUNK_FORMAT = struct.Struct('<4s I')
+FMT_FORMAT = struct.Struct('<HHIIHH')
+HEADER_FORMAT = struct.Struct('<4s I 4s 4s I H H I I H H')
+FMT_FORMAT = struct.Struct('<H H I I H H')
+
+assert CHUNK_FORMAT.size == 8
+assert FMT_FORMAT.size == 16
+assert HEADER_FORMAT.size == 36, f'{HEADER_FORMAT.size}'
 
 
 class WaveReadMap(RawMap):
@@ -187,7 +185,7 @@ class WaveWriteMap(RawMap):
         nChannels = 1 if len(shape) == 1 else min(shape)
         nSamples = max(shape)
         size = nChannels * nSamples * dt.itemsize
-        cksize = size + size % 2 + CHUNK_FORMAT.size
+        cksize = size + size % 2
 
         if issubclass(dt.type, np.integer):
             wFormatTag = WAVE_FORMAT_PCM
@@ -225,12 +223,15 @@ class WaveWriteMap(RawMap):
         )
 
         if fact_cksize:
+            print('YES')
             fp.write(struct.pack('<H', 0))
             chunk(b'fact', 4)
+        else:
+            print('NO')
 
         chunk(b'data', size)
         offset = fp.tell()
-        assert offset == len(fp.getvalue())
+        print('XXX', offset, size, cksize, fmt_cksize, fact_cksize)
 
         s1, *s2 = shape
         s2 = s2 and s2[0] or 1
@@ -249,6 +250,8 @@ class WaveWriteMap(RawMap):
             False,
             warn,
         )
+
+        assert offset == len(fp.getvalue())
         self._mmap[:offset] = fp.getvalue()
         self.sample_rate = sample_rate
 
@@ -280,9 +283,15 @@ def _metadata(filename, warn):
     begin = end = fmt = None
 
     with open(filename, 'rb') as fp:
-        (tag, _, _), *chunks = _chunks(fp, warn)
+        file_size = fp.seek(-1, 2)
+
+    with open(filename, 'rb') as fp:
+        (tag, b, e), *chunks = _chunks(fp, warn)
         if tag != b'WAVE':
             raise ValueError(f'Not a WAVE file: {tag}')
+        assert b == 0
+        print('chsize =', e)
+        print('file_size =', file_size)
 
         for tag, b, e in chunks:
             if tag == b'fmt ':
@@ -306,11 +315,10 @@ def _metadata(filename, warn):
         raise ValueError('No fmt chunk found')
 
     if len(fmt) not in FMT_BLOCK_LENGTHS:
-        warn(fmt)
-        raise ValueError(f'Weird fmt block length {len(fmt)}')
-
-    if False and len(fmt) == 40:
-        raise ValueError('Cannot read extensible format WAV files')
+        error = f'Weird fmt block length {len(fmt)}'
+        warn(error)
+        if False:
+            raise ValueError(error)
 
     return begin, end - begin, fmt
 
