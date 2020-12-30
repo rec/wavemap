@@ -7,9 +7,6 @@ WAVE_FORMATS = WAVE_FORMAT_PCM, WAVE_FORMAT_IEEE_FLOAT
 # Making 24 bits work transparently is probably impossible:
 # https://stackoverflow.com/a/34128171/43839
 
-# Deal with a quirk in certain .WAV test files
-BAD_TAG_ADJUSTMENT = True
-
 CHUNK_FORMAT = struct.Struct('<4s I')
 FMT_FORMAT = struct.Struct('<HHIIHH')
 HEADER_FORMAT = struct.Struct('<4s I 4s 4s I H H I I H H')

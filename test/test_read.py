@@ -21,19 +21,24 @@ READABLE = [
 
 
 class TestWaveMap(unittest.TestCase):
+    def test_snare(self):
+        f = next(f for f in WAVE_FILES if 'Kick' in f.name)
+        wavemap.WaveMap(f)
+
     def test_existing(self):
         success, failure = [], []
-        for w in WAVE_FILES:
+        for f in WAVE_FILES:
             try:
-                success.append(wavemap.WaveMap(w))
+                success.append(wavemap.WaveMap(f))
             except Exception as e:
-                failure.append((w.stem, e.args[0]))
+                if not True:
+                    raise
+                failure.append((f.stem, e.args[0]))
 
         filenames = [s.filename.name for s in success]
         assert filenames == READABLE
         dtypes = [str(s.dtype) for s in success]
         lengths = [s.shape[0] for s in success]
-        assert len(failure) == 24
 
         assert dtypes == [
             'int16',
@@ -52,16 +57,16 @@ class TestWaveMap(unittest.TestCase):
         assert lengths == [
             10482,
             3131,
-            10287,
-            296108,
-            440,
+            10288,
+            296109,
+            441,
             23493,
             23493,
             23493,
             23493,
             23493,
-            29015,
-            29015,
+            29016,
+            29016,
         ]
 
     def test_warnings(self):
@@ -71,21 +76,8 @@ class TestWaveMap(unittest.TestCase):
                 warnings.append([])
                 wavemap.WaveMap(w, warn=warnings[-1].append)
 
-        expected = [
-            [],
-            [],
-            ['1 byte after end-of-frame discarded'],
-            ['3 bytes after end-of-frame discarded'],
-            ['7 bytes after end-of-frame discarded'],
-            [],
-            [],
-            [],
-            [],
-            [],
-            ['7 bytes after end-of-frame discarded'],
-            ['3 bytes after end-of-frame discarded'],
-        ]
-
+        expected = [['WAVE cksize is wrong: 42074 != 42082']]
+        expected += [[]] * (len(warnings) - 1)
         assert warnings == expected
 
     def test_error(self):

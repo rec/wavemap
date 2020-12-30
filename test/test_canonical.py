@@ -19,7 +19,7 @@ class TestCanonical(unittest.TestCase):
         # ffmpeg writes files in extended format when I try to write
         # floating point!
         for infile in (w for w in WAVE_FILES if w.name in READABLE):
-            print('-->', infile)
+            # print('-->', infile)
             w_in = WaveMap(infile)
 
             outfile = Path(infile.name)

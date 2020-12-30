@@ -1,3 +1,4 @@
+from .memmap import memmap
 import numpy as np
 import sys
 
@@ -6,70 +7,90 @@ def warn(msg):
     print(msg, file=sys.stderr)
 
 
-class RawMap(np.memmap):
+class RawMap(memmap):
     """"Memory map raw audio data from a disk file into a numpy matrix"""
 
     def __new__(
         cls,
         filename,
         dtype,
-        channels,
-        offset=0,
-        length=None,
         mode='r',
-        shape=None,
+        shape=None,  # For writing
+        channel_count=None,  # For reading
+        offset=0,
+        roffset=None,
         order=None,
         always_2d=False,
         warn=warn,
     ):
-        dt = np.dtype(dtype)
-        bytes_per_frame = dt.itemsize * channels
+        assert offset >= 0 and not roffset or roffset >= 0
+        dtype = np.dtype(dtype)
 
         if 'w' in mode:
+            if shape is None:
+                raise ValueError('`shape` must be set')
             mode = 'w+'
-            if shape:
-                if length and warn:
-                    warn('Setting shape overrides length')
-                order = order or 'FC'[max(shape) == shape[0]]
 
-            elif length is None:
-                raise ValueError('One of `length` or `shape` must be set')
+        elif not shape:
+            if not channel_count:
+                raise ValueError('One of channel_count and shape must be set')
 
-        elif length is None and shape is None:
-            length = _file_size(filename) - offset
+            sample_bytes = dtype.itemsize
+            frame_bytes = sample_bytes * channel_count
 
-        order = order or 'C'
+            audio_bytes = file_byte_size(filename) - offset - roffset
+            frame_count = audio_bytes // frame_bytes
 
-        if not shape:
-            frames = length // bytes_per_frame
-            extra = length % bytes_per_frame
+            extra = audio_bytes % frame_bytes
             if extra and warn:
                 s = '' if extra == 1 else 's'
                 warn(f'{extra} byte{s} after end-of-frame discarded')
 
-            if channels == 1 and not always_2d:
-                shape = (frames,)
+            order = order or 'C'
+
+            if channel_count == 1 and not always_2d:
+                shape = (frame_count,)
             elif order == 'C':
-                shape = frames, channels
+                shape = frame_count, channel_count
             elif order == 'F':
-                shape = channels, frames
+                shape = channel_count, frame_count
             else:
                 raise ValueError(f'Bad order "{order}"')
 
-        self = np.memmap.__new__(cls, filename, dt, mode, offset, shape, order)
+        else:
+            cc = channel_count
+            if len(shape) == 1:
+                frame_count = shape[0]
+                channel_count = 1
 
+            elif len(shape) == 2:
+                frame_count, channel_count = max(shape), min(shape)
+
+            else:
+                raise ValueError('Wave files can only have 1 or 2 dimensions')
+            if cc is not None and cc != channel_count:
+                warn('Setting shape overrides channel_count')
+
+        order = order or 'FC'[max(shape) == shape[0]]
+
+        self = memmap.__new__(
+            cls, filename, dtype, mode, offset, shape, order, roffset
+        )
         self.order = order
-        self.channnels = channels
-        self.length = length
+        self.channnel_count = channel_count
+        self.roffset = roffset
 
         return self
 
-    @property
-    def duration(self):
-        return max(self.shape) / self.sample_rate
 
-
-def _file_size(filename):
+def file_byte_size(filename):
     with open(filename, 'rb') as fp:
-        fp.seek(0, 2)
-        return fp.tell()
+        return fp.seek(0, 2)
+
+
+def dump_locals():
+    from numbers import Number
+
+    for k, v in locals().items():
+        if isinstance(v, (Number, tuple, str)):
+            print(f'{k} = {v!r}')

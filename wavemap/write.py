@@ -1,95 +1,92 @@
 from . import constants
-from .raw import warn, RawMap
-import io
+from . import raw
+from .layout import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
 import numpy as np
-import struct
+
+CHUNK_HEADER = 8
+DEFAULT_SAMPLE_RATE = 44100
 
 
-class WriteMap(RawMap):
+class WriteMap(raw.RawMap):
     """"Memory-map a new wave file"""
 
     def __new__(
-        cls, filename, dtype, shape, sample_rate, length=None, warn=warn
+        cls, filename, dtype, shape, sample_rate, roffset=0, warn=raw.warn
     ):
-        dt = np.dtype(dtype)
-        nChannels = 1 if len(shape) == 1 else min(shape)
-        nSamples = max(shape)
-        size = nChannels * nSamples * dt.itemsize
-        cksize = size + size % 2
+        """
+        ARGUMENTS
+          roffset:
+            How many bytes in the file after the WAV data chunk
+        """
+        dtype = np.dtype(dtype)
 
-        if issubclass(dt.type, np.integer):
+        if issubclass(dtype.type, np.integer):
             wFormatTag = constants.WAVE_FORMAT_PCM
-            fmt_cksize = 16
-            fact_cksize = 0
-            cksize += 36
+            layout = PCM
+            fmt_layout = FMT_PCM
         else:
             wFormatTag = constants.WAVE_FORMAT_IEEE_FLOAT
-            fmt_cksize = 18
-            fact_cksize = 12
-            cksize += 48
+            layout = NON_PCM
+            fmt_layout = FMT_NON_PCM
 
-        wBitsPerSample = dt.itemsize * 8
-        nAvgBytesPerSec = sample_rate * dt.itemsize * nChannels
-        nBlockAlign = dt.itemsize * nChannels
+        channel_count = 1 if len(shape) == 1 else min(shape)
+        frame_count = max(shape)
 
-        fp = io.BytesIO()
+        sample_bytes = dtype.itemsize
+        frame_bytes = sample_bytes * channel_count
+        total_frame_bytes = frame_bytes * frame_count
+        pad = total_frame_bytes % 2
 
-        def chunk(name, size):
-            fp.write(constants.CHUNK_FORMAT.pack(name, size))
-
-        chunk(b'RIFF', cksize)
-        fp.write(b'WAVE')
-
-        chunk(b'fmt ', fmt_cksize)
-        fp.write(
-            constants.FMT_FORMAT.pack(
-                wFormatTag,
-                nChannels,
-                sample_rate,
-                nAvgBytesPerSec,
-                nBlockAlign,
-                wBitsPerSample,
-            )
-        )
-
-        if fact_cksize:
-            fp.write(struct.pack('<H', 0))
-            chunk(b'fact', 4)
-
-        chunk(b'data', size)
-        offset = fp.tell()
-
-        s1, *s2 = shape
-        s2 = s2 and s2[0] or 1
-        length = s1 * s2
-
-        self = RawMap.__new__(
+        self = raw.RawMap.__new__(
             cls,
-            filename,
-            dtype,
-            nChannels,
-            offset,
-            length,
-            'w+',
-            shape,
-            None,
-            False,
-            warn,
+            filename=filename,
+            dtype=dtype,
+            mode='w+',
+            shape=shape,
+            offset=layout.size,
+            roffset=roffset + pad,
+            warn=warn,
         )
 
-        assert offset == len(fp.getvalue())
-        self._mmap[:offset] = fp.getvalue()
+        self.file_size = layout.size + total_frame_bytes + pad
         self.sample_rate = sample_rate
 
+        layout.pack_into(
+            self._mmap,
+            ckIDRiff=b'RIFF',
+            cksizeRiff=self.file_size - CHUNK_HEADER,
+            WAVEID=b'WAVE',
+            ckIDFmt=b'fmt ',
+            cksizeFmt=fmt_layout.size - CHUNK_HEADER,
+            wFormatTag=wFormatTag,
+            nChannels=channel_count,
+            nSamplesPerSec=sample_rate,
+            nAvgBytesPerSec=sample_rate * frame_bytes,
+            nBlockAlign=frame_bytes,
+            wBitsPerSample=sample_bytes * 8,
+            cbSize=0,  # Non PCM
+            ckIDFact=b'fact',
+            cksizeFact=4,
+            dwSampleLength=channel_count * frame_count,
+            ckIDData=b'data',
+            cksizeData=total_frame_bytes,
+        )
+
         return self
-        # TODO: handle that extra pad byte again!
 
     @classmethod
-    def new_like(cls, filename, arr, sample_rate=None, length=None, warn=warn):
-        sample_rate = sample_rate or getattr(arr, 'sample_rate', None)
-        if not sample_rate:
-            raise ValueError('sample_rate must be set')
+    def new_like(
+        cls, filename, arr, sample_rate=None, roffset=None, warn=raw.warn
+    ):
+        if sample_rate is None:
+            sample_rate = getattr(arr, 'sample_rate', DEFAULT_SAMPLE_RATE)
 
-        wm = cls(filename, arr.dtype, arr.shape, sample_rate, length, warn)
+        if roffset is None:
+            roffset = getattr(arr, 'roffset', 0)
+
+        from pathlib import Path
+
+        assert not Path(filename).exists(), str(filename)
+        wm = cls(filename, arr.dtype, arr.shape, sample_rate, roffset, warn)
         np.copyto(dst=wm, src=arr, casting='no')
         return wm

@@ -1,5 +1,5 @@
 from . import constants
-from .raw import warn, RawMap
+from . import raw
 import numpy as np
 import struct
 
@@ -13,13 +13,17 @@ FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 BAD_TAG_ADJUSTMENT = True
 
 
-class ReadMap(RawMap):
+class ReadMap(raw.RawMap):
     """"Memory-map an existing wave file into a numpy matrix"""
 
     def __new__(
-        cls, filename, mode='r', order=None, always_2d=False, warn=warn
+        cls, filename, mode='r', order=None, always_2d=False, warn=raw.warn
     ):
-        offset, length, fmt = _metadata(filename, warn)
+        file_size = raw.file_byte_size(filename)
+
+        with open(filename, 'rb') as fp:
+            offset, end, fmt = _metadata(fp, warn, file_size)
+            roffset = file_size - end
 
         (
             wFormatTag,
@@ -44,53 +48,48 @@ class ReadMap(RawMap):
             dtype = f'{type_name}{wBitsPerSample}'
 
         assert np.dtype(dtype).itemsize == wBitsPerSample // 8
-
-        self = RawMap.__new__(
+        self = raw.RawMap.__new__(
             cls,
-            filename,
-            dtype,
-            nChannels,
-            offset,
-            length,
-            mode,
-            None,
-            order,
-            always_2d,
-            warn,
+            filename=filename,
+            dtype=dtype,
+            mode=mode,
+            shape=None,
+            channel_count=nChannels,
+            offset=offset,
+            roffset=roffset,
+            order=order,
+            always_2d=always_2d,
+            warn=warn,
         )
 
         self.sample_rate = nSamplesPerSec
         return self
 
 
-def _metadata(filename, warn):
+def _metadata(fp, warn, file_size):
+    (tag, b, e), *chunks = _chunks(fp, warn, file_size)
+    if tag != b'WAVE':
+        raise ValueError(f'Not a WAVE file: {tag}')
+
+    assert b == 0
+    if e != file_size - 8:
+        warn(f'WAVE cksize is wrong: {e} != {file_size - 8}')
+
     begin = end = fmt = None
-
-    with open(filename, 'rb') as fp:
-        file_size = fp.seek(-1, 2)
-
-    with open(filename, 'rb') as fp:
-        (tag, b, e), *chunks = _chunks(fp, warn)
-        if tag != b'WAVE':
-            raise ValueError(f'Not a WAVE file: {tag}')
-        assert b == 0
-        print('chsize =', e)
-        print('file_size =', file_size)
-
-        for tag, b, e in chunks:
-            if tag == b'fmt ':
-                if not fmt:
-                    b += constants.CHUNK_FORMAT.size
-                    fp.seek(b)
-                    fmt = fp.read(e - b)
-                else:
-                    warn('fmt chunk after first ignored')
-            elif tag == b'data':
-                if not (begin or end):
-                    b += constants.CHUNK_FORMAT.size
-                    begin, end = b, e
-                else:
-                    warn('data chunk after first ignored')
+    for tag, b, e in chunks:
+        if tag == b'fmt ':
+            if not fmt:
+                b += constants.CHUNK_FORMAT.size
+                fp.seek(b)
+                fmt = fp.read(e - b)
+            else:
+                warn('fmt chunk after first ignored')
+        elif tag == b'data':
+            if not (begin or end):
+                b += constants.CHUNK_FORMAT.size
+                begin, end = b, e
+            else:
+                warn('data chunk after first ignored')
 
     if begin is None:
         raise ValueError('No data chunk found')
@@ -99,18 +98,12 @@ def _metadata(filename, warn):
         raise ValueError('No fmt chunk found')
 
     if len(fmt) not in FMT_BLOCK_LENGTHS:
-        error = f'Weird fmt block length {len(fmt)}'
-        warn(error)
-        if False:
-            raise ValueError(error)
+        warn(f'Weird fmt block length {len(fmt)}')
 
-    return begin, end - begin, fmt
+    return begin, end, fmt
 
 
-def _chunks(fp, warn):
-    file_size = fp.seek(-1, 2)
-    fp.seek(0)
-
+def _chunks(fp, warn, file_size):
     def read_one(format):
         s = fp.read(struct.calcsize(format))
         return struct.unpack('<' + format, s)[0]

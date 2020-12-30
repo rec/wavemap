@@ -208,6 +208,7 @@ class memmap(ndarray):
         offset=0,
         shape=None,
         order='C',
+        roffset=0,
     ):
         # Import here to minimize 'import numpy' overhead
         import mmap
@@ -240,7 +241,7 @@ class memmap(ndarray):
             _dbytes = descr.itemsize
 
             if shape is None:
-                bytes = flen - offset
+                bytes = flen - offset - roffset
                 if bytes % _dbytes:
                     raise ValueError(
                         "Size of available data is not a "
@@ -257,7 +258,7 @@ class memmap(ndarray):
                 for k in shape:
                     size *= k
 
-            bytes = int(offset + size * _dbytes)
+            bytes = int(offset + size * _dbytes + roffset)
 
             if mode in ('w+', 'r+') and flen < bytes:
                 fid.seek(bytes - 1, 0)
@@ -286,6 +287,7 @@ class memmap(ndarray):
             )
             self._mmap = mm
             self.offset = offset
+            self.roffset = roffset
             self.mode = mode
 
             if is_pathlib_path(filename):
