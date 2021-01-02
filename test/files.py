@@ -1,7 +1,11 @@
 from pathlib import Path
 import stroll
+import wavemap
 
-WAVE_FILES = list(stroll(Path(__file__).parent / 'data', suffix='.wav'))
+FILE_ROOT = Path(__file__).parent
+DATA_ROOT = FILE_ROOT / 'data'
+EXPECTED_ROOT = FILE_ROOT / 'expected'
+WAVE_FILES = list(stroll(DATA_ROOT, suffix='.wav'))
 READABLE = [
     'Kick.wav',
     'Snare.wav',
@@ -18,5 +22,19 @@ READABLE = [
 ]
 
 
-def find(s):
+def find(s=''):
     return (w for w in WAVE_FILES if w.name in READABLE and s in w.name)
+
+
+def copy_readable(target_root=EXPECTED_ROOT):
+    for filename in find():
+        wm = wavemap.WaveMap(filename)
+
+        target_file = target_root / filename.relative_to(DATA_ROOT)
+        target_file.parent.mkdir(parents=True, exist_ok=True)
+
+        wavemap.copy_to(wm, target_file)
+
+
+if __name__ == '__main__':
+    copy_readable()
