@@ -26,15 +26,16 @@ def find(s=''):
     return (w for w in WAVE_FILES if w.name in READABLE and s in w.name)
 
 
-def copy_readable(target_root=EXPECTED_ROOT):
-    for filename in find():
-        wm = wavemap.WaveMap(filename)
+def canonical(filename):
+    target_file = EXPECTED_ROOT / filename.relative_to(DATA_ROOT)
+    target_file.parent.mkdir(parents=True, exist_ok=True)
+    return target_file
 
-        target_file = target_root / filename.relative_to(DATA_ROOT)
-        target_file.parent.mkdir(parents=True, exist_ok=True)
 
-        wavemap.copy_to(wm, target_file)
+def copy_canonical():
+    for f in find():
+        wavemap.copy_to(wavemap.WaveMap(f), canonical(f))
 
 
 if __name__ == '__main__':
-    copy_readable()
+    copy_canonical()

@@ -1,24 +1,6 @@
 from . import files
-from pathlib import Path
-import stroll
 import unittest
 import wavemap
-
-WAVE_FILES = list(stroll(Path(__file__).parent / 'data', suffix='.wav'))
-READABLE = [
-    'Kick.wav',
-    'Snare.wav',
-    'Tom.wav',
-    'bell01.wav',
-    'test-44100Hz-2ch-32bit-float-le.wav',
-    'M1F1-float32-AFsp.wav',
-    'M1F1-float64-AFsp.wav',
-    'M1F1-int16-AFsp.wav',
-    'M1F1-int32-AFsp.wav',
-    'M1F1-uint8-AFsp.wav',
-    'stereofl.wav',
-    'stereol.wav',
-]
 
 
 class TestWaveMap(unittest.TestCase):
@@ -71,14 +53,14 @@ class TestWaveMap(unittest.TestCase):
 
     def test_warnings(self):
         warnings = []
-        for w in WAVE_FILES:
-            if w.name in READABLE:
-                warnings.append([])
-                wavemap.WaveMap(w, warn=warnings[-1].append)
+        for w in files.find():
+            warnings.append([])
+            wavemap.WaveMap(w, warn=warnings[-1].append)
 
-        expected = [['WAVE cksize is wrong: 42074 != 42082']]
-        expected += [[]] * (len(warnings) - 1)
-        assert warnings == expected
+        first, *rest = warnings
+
+        assert first == ['WAVE cksize is wrong: 42074 != 42082']
+        assert all(i == [] for i in rest)
 
     def test_error(self):
         with self.assertRaises(ValueError) as m:
