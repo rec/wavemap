@@ -1,4 +1,4 @@
-from .test_read import WAVE_FILES, READABLE
+from . import files
 from numpy.testing import assert_array_equal
 from pathlib import Path
 import struct
@@ -9,7 +9,7 @@ import wavemap
 
 class TestWaveWrite(unittest.TestCase):
     def test_write1(self):
-        wm = wavemap.WaveMap(_finder('int16'))
+        wm = wavemap.WaveMap(next(files.find('int16')))
         assert wm.shape == (23493, 2)
 
     @tdir
@@ -39,9 +39,7 @@ class TestWaveWrite(unittest.TestCase):
 
     @tdir
     def test_int(self):
-        for filename in WAVE_FILES:
-            if not ('int' in filename.name and filename.name in READABLE):
-                continue
+        for filename in files.find('int'):
             (wm, wm1, wm2), (b, b1, b2) = _test(filename)
             assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
             assert b1 == b2
@@ -63,9 +61,7 @@ class TestWaveWrite(unittest.TestCase):
 
     @tdir
     def test_float(self):
-        for filename in WAVE_FILES:
-            if not ('float' in filename.name and filename.name in READABLE):
-                continue
+        for filename in files.find('float'):
             # print(filename)
             (wm, wm1, wm2), (b, b1, b2) = _test(filename)
             assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
@@ -78,12 +74,8 @@ class TestWaveWrite(unittest.TestCase):
             # assert len(differs) == 1355, f'{len(sb)}'
 
 
-def _finder(s):
-    return next(w for w in WAVE_FILES if w.name in READABLE and s in w.name)
-
-
 def _find(s, hard=False):
-    return _test(_finder(s), hard)
+    return _test(next(files.find(s)), hard)
 
 
 def _test(filename, hard=False, assert_array_equal=assert_array_equal):
@@ -108,7 +100,6 @@ def _test(filename, hard=False, assert_array_equal=assert_array_equal):
         assert file_sizes == byte_sizes
         assert wm1.shape == wm2.shape == wm3.shape
     else:
-        # TODO: where are these two bytes going!?
         assert max(abs(f - b) for f, b in zip(file_sizes, byte_sizes)) <= 166
 
     return wm, b

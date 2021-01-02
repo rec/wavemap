@@ -1,3 +1,4 @@
+from . import files
 from pathlib import Path
 import stroll
 import unittest
@@ -22,12 +23,11 @@ READABLE = [
 
 class TestWaveMap(unittest.TestCase):
     def test_snare(self):
-        f = next(f for f in WAVE_FILES if 'Kick' in f.name)
-        wavemap.WaveMap(f)
+        wavemap.WaveMap(next(files.find('Kick')))
 
     def test_existing(self):
         success, failure = [], []
-        for f in WAVE_FILES:
+        for f in files.WAVE_FILES:
             try:
                 success.append(wavemap.WaveMap(f))
             except Exception as e:
@@ -36,7 +36,7 @@ class TestWaveMap(unittest.TestCase):
                 failure.append((f.stem, e.args[0]))
 
         filenames = [s.filename.name for s in success]
-        assert filenames == READABLE
+        assert filenames == files.READABLE
         dtypes = [str(s.dtype) for s in success]
         lengths = [s.shape[0] for s in success]
 
