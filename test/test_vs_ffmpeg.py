@@ -1,4 +1,4 @@
-from .test_read import WAVE_FILES, READABLE
+from . import files
 from numpy.testing import assert_array_equal
 from pathlib import Path
 from wavemap import WaveMap
@@ -18,7 +18,7 @@ class TestCanonical(unittest.TestCase):
     def FAILED_test_canonical(self):
         # ffmpeg writes files in extended format when I try to write
         # floating point!
-        for infile in (w for w in WAVE_FILES if w.name in READABLE):
+        for infile in files.find():
             # print('-->', infile)
             w_in = WaveMap(infile)
 
