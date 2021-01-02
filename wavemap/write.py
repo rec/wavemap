@@ -76,7 +76,7 @@ class WriteMap(raw.RawMap):
 
     @classmethod
     def new_like(
-        cls, filename, arr, sample_rate=None, roffset=None, warn=raw.warn
+        cls, arr, filename, sample_rate=None, roffset=None, warn=raw.warn
     ):
         if sample_rate is None:
             sample_rate = getattr(arr, 'sample_rate', DEFAULT_SAMPLE_RATE)
@@ -84,9 +84,12 @@ class WriteMap(raw.RawMap):
         if roffset is None:
             roffset = getattr(arr, 'roffset', 0)
 
-        from pathlib import Path
+        return cls(filename, arr.dtype, arr.shape, sample_rate, roffset, warn)
 
-        assert not Path(filename).exists(), str(filename)
-        wm = cls(filename, arr.dtype, arr.shape, sample_rate, roffset, warn)
-        np.copyto(dst=wm, src=arr, casting='no')
+    @classmethod
+    def copy_to(
+        cls, arr, filename, sample_rate=None, roffset=None, warn=raw.warn
+    ):
+        wm = cls.new_like(arr, filename, sample_rate, roffset, warn)
+        np.copyto(src=arr, dst=wm, casting='no')
         return wm

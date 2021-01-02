@@ -14,9 +14,17 @@ from .raw import RawMap
 from .read import ReadMap as WaveReadMap
 from .write import WriteMap as WaveWriteMap
 
-__all__ = 'RawMap', 'WaveReadMap', 'WaveWriteMap', 'WaveMap'
+__all__ = (
+    'RawMap',
+    'WaveReadMap',
+    'WaveWriteMap',
+    'WaveMap',
+    'copy_to',
+    'new_like',
+)
 __version__ = '0.9.1'
 
+copy_to = WaveWriteMap.copy_to
 new_like = WaveWriteMap.new_like
 
 

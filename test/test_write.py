@@ -82,12 +82,12 @@ def _test(filename, hard=False, assert_array_equal=assert_array_equal):
     wm1 = wavemap.WaveMap(filename)
 
     localfile = Path(filename.name)
-    wm2 = wavemap.new_like(localfile, wm1)
+    wm2 = wavemap.copy_to(wm1, localfile)
     assert_array_equal(wm1, wm2)
     wm2.flush()
 
     localfile2 = Path(f'{filename.stem}-2{filename.suffix}')
-    wm3 = wavemap.new_like(localfile2, wm2)
+    wm3 = wavemap.copy_to(wm2, localfile2)
     assert_array_equal(wm1, wm3)
     wm3.flush()
 
