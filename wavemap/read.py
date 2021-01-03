@@ -1,4 +1,3 @@
-from . import constants
 from . import raw
 from .structure import wave
 import numpy as np
@@ -31,10 +30,10 @@ class ReadMap(raw.RawMap):
             roffset = file_size - end
 
         f = wave.FMT_PCM.unpack_from(fmt)
-        if f.wFormatTag not in constants.WAVE_FORMATS:
+        if f.wFormatTag not in wave.WAVE_FORMATS:
             raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 
-        is_float = f.wFormatTag == constants.WAVE_FORMAT_IEEE_FLOAT
+        is_float = f.wFormatTag == wave.WAVE_FORMAT_IEEE_FLOAT
         if f.wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
             raise ValueError(
                 f'Cannot mmap f.wBitsPerSample={f.wBitsPerSample}'

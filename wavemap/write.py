@@ -1,5 +1,5 @@
-from . import constants
 from . import raw
+from .structure import wave
 from .structure.wave import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
 import numpy as np
 
@@ -21,11 +21,11 @@ class WriteMap(raw.RawMap):
         dtype = np.dtype(dtype)
 
         if issubclass(dtype.type, np.integer):
-            wFormatTag = constants.WAVE_FORMAT_PCM
+            wFormatTag = wave.WAVE_FORMAT_PCM
             structure = PCM
             fmt_structure = FMT_PCM
         else:
-            wFormatTag = constants.WAVE_FORMAT_IEEE_FLOAT
+            wFormatTag = wave.WAVE_FORMAT_IEEE_FLOAT
             structure = NON_PCM
             fmt_structure = FMT_NON_PCM
 
