@@ -4,11 +4,8 @@ import struct
 
 INT16 = 'H'
 INT32 = 'I'
-SUBFORMAT = '16s'
-TAG = '4s'
 
 INT = INT16, INT32
-BYTES = SUBFORMAT, TAG
 
 
 class Structure:
@@ -40,7 +37,7 @@ class Structure:
             else:
                 if fmt in INT and not isinstance(v, int):
                     errors.append(f'Integer {name} had value {v!r}')
-                elif fmt in BYTES and not isinstance(v, (bytes, bytearray)):
+                elif fmt.endswith('s') and not isinstance(v, bytes):
                     errors.append(f'Bytes {name} had value {v!r}')
                 else:
                     args.append(v)

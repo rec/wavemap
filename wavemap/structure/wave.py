@@ -1,4 +1,4 @@
-from .structure import Structure, INT16, INT32, SUBFORMAT, TAG
+from .structure import Structure, INT16, INT32
 
 WAVE_FORMAT_PCM = 0x0001
 WAVE_FORMAT_IEEE_FLOAT = 0x0003
@@ -13,6 +13,9 @@ WAVE_FORMATS = (
     # WAVE_FORMAT_MULAW,
     # WAVE_FORMAT_EXTENSIBLE,
 )
+
+TAG = '4s'
+SUBFORMAT = '14s'
 
 CHUNK = Structure(ckID=TAG, cksize=INT32)
 RIFF = Structure(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
@@ -37,21 +40,23 @@ FMT_PCM = Structure(
 
 FMT_NON_PCM = FMT_PCM + Structure(cbSize=INT16)
 
-FMT_EXTENSIBLE = FMT_NON_PCM + Structure(
-    wValidBitsPerSample=INT16, dwChannelMask=TAG, SubFormat=SUBFORMAT
+FMT_EXTENSION = Structure(
+    cbSize=INT16,
+    wValidBitsPerSample=INT16,
+    dwChannelMask=TAG,
+    wFormatTag=INT16,
+    subFormat=SUBFORMAT,
 )
 
 assert FMT_PCM.size == 24
 assert FMT_NON_PCM.size == 26
-assert FMT_EXTENSIBLE.size == 48
+assert FMT_EXTENSION.size == 24
 
 PCM = RIFF + FMT_PCM + DATA
 NON_PCM = RIFF + FMT_NON_PCM + FACT + DATA
-EXTENSIBLE = RIFF + FMT_EXTENSIBLE + DATA
 
 assert PCM.size == 44
 assert NON_PCM.size == 58
-assert EXTENSIBLE.size == 68
 
 if __name__ == '__main__':
     d = list(locals().items())
