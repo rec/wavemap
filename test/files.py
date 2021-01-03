@@ -15,6 +15,7 @@ READABLE = [
     'M1F1-float32-AFsp.wav',
     'M1F1-float64-AFsp.wav',
     'M1F1-int16-AFsp.wav',
+    # 'M1F1-int16WE-AFsp.wav',
     'M1F1-int32-AFsp.wav',
     'M1F1-uint8-AFsp.wav',
     'stereofl.wav',

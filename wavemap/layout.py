@@ -1,4 +1,5 @@
 """Layouts of data in memory"""
+from argparse import Namespace
 import struct
 
 
@@ -7,6 +8,19 @@ class Layout:
         self.formats = formats
         self.struct = struct.Struct('<' + ''.join(formats.values()))
         self.size = self.struct.size
+
+    def pack(self, **kwargs):
+        return self.struct.pack(*self._to_arg(kwargs))
+
+    def pack_into(self, buffer, offset=0, **kwargs):
+        return self.struct.pack_into(buffer, offset, *self._to_arg(kwargs))
+
+    def unpack_from(self, buffer, offset=0):
+        parts = self.struct.unpack(buffer, offset)
+        return Namespace(**dict(zip(self.names, parts)))
+
+    def __add__(self, fmt):
+        return __class__(**dict(self.formats, **fmt.formats))
 
     def _to_arg(self, kw):
         errors, args = [], []
@@ -39,19 +53,6 @@ class Layout:
             self.formats
         ), f'{len(args)} == {len(self.formats)}'
         return args
-
-    def pack(self, **kwargs):
-        return self.struct.pack(*self._to_arg(kwargs))
-
-    def pack_into(self, buffer, offset=0, **kwargs):
-        return self.struct.pack_into(buffer, offset, *self._to_arg(kwargs))
-
-    def unpack(self, src):
-        parts = self.struct.unpack(src)
-        return dict(zip(self.names, parts))
-
-    def __add__(self, fmt):
-        return __class__(**dict(self.formats, **fmt.formats))
 
 
 # See http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
