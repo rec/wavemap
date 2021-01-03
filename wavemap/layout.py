@@ -63,9 +63,15 @@ TAG = '4s'
 INT = INT16, INT32
 BYTES = SUBFORMAT, TAG
 
+CHUNK = Layout(ckID=TAG, cksize=INT32)
 RIFF = Layout(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
 FACT = Layout(ckIDFact=TAG, cksizeFact=INT32, dwSampleLength=INT32)
 DATA = Layout(ckIDData=TAG, cksizeData=INT32)
+
+assert CHUNK.size == 8
+assert RIFF.size == 12
+assert FACT.size == 12
+assert DATA.size == 8
 
 FMT_PCM = Layout(
     ckIDFmt=TAG,
@@ -84,17 +90,14 @@ FMT_EXTENSIBLE = FMT_NON_PCM + Layout(
     wValidBitsPerSample=INT16, dwChannelMask=TAG, SubFormat=SUBFORMAT
 )
 
+assert FMT_PCM.size == 24
+assert FMT_NON_PCM.size == 26
+assert FMT_EXTENSIBLE.size == 48
 
 PCM = RIFF + FMT_PCM + DATA
 NON_PCM = RIFF + FMT_NON_PCM + FACT + DATA
 EXTENSIBLE = RIFF + FMT_EXTENSIBLE + DATA
 
-assert RIFF.size == 12
-assert FMT_PCM.size == 24
-assert FMT_NON_PCM.size == 26
-assert FMT_EXTENSIBLE.size == 48
-assert DATA.size == 8
-assert FACT.size == 12
 assert PCM.size == 44
 assert NON_PCM.size == 58
 assert EXTENSIBLE.size == 68
