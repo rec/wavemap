@@ -1,4 +1,4 @@
-from . import Structure, INT16, INT32, SUBFORMAT, TAG
+from .structure import Structure, INT16, INT32, SUBFORMAT, TAG
 
 CHUNK = Structure(ckID=TAG, cksize=INT32)
 RIFF = Structure(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
