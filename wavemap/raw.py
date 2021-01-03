@@ -1,6 +1,9 @@
+# from numpy.lib.stride_tricks import as_strided
 from .memmap import memmap
 import numpy as np
 import sys
+
+int24 = 'int24'
 
 
 def warn(msg):
@@ -21,22 +24,28 @@ class RawMap(memmap):
         roffset=None,
         order=None,
         always_2d=False,
+        allow_conversion=True,
         warn=warn,
     ):
-        assert offset >= 0 and not roffset or roffset >= 0
-        dtype = np.dtype(dtype)
+        if (channel_count is None) == (shape is None):
+            raise ValueError('One of channel_count or shape must be set')
+
+        if offset < 0 or roffset and roffset < 0:
+            raise ValueError('offset and roffset must be non-negative')
+
+        is_int24 = isinstance(dtype, str) and dtype == int24
+        dt = np.dtype('uint8' if is_int24 else dtype)
 
         if 'w' in mode:
             if shape is None:
-                raise ValueError('`shape` must be set')
+                raise ValueError('`shape` must be set in write mode')
             mode = 'w+'
 
         elif not shape:
-            if not channel_count:
-                raise ValueError('One of channel_count and shape must be set')
+            if is_int24:
+                channel_count *= 3
 
-            sample_bytes = dtype.itemsize
-            frame_bytes = sample_bytes * channel_count
+            frame_bytes = dt.itemsize * channel_count
 
             audio_bytes = file_byte_size(filename) - offset - roffset
             frame_count = audio_bytes // frame_bytes
@@ -74,11 +83,16 @@ class RawMap(memmap):
         order = order or 'FC'[max(shape) == shape[0]]
 
         self = memmap.__new__(
-            cls, filename, dtype, mode, offset, shape, order, roffset
+            cls, filename, dt, mode, offset, shape, order, roffset
         )
+
         self.order = order
         self.channnel_count = channel_count
         self.roffset = roffset
+
+        if is_int24 and allow_conversion:
+            length = max(self.shape)
+            length -= length % 12
 
         return self
 

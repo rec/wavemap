@@ -4,7 +4,7 @@ import numpy as np
 import struct
 
 FLOAT_BITS_PER_SAMPLE = {32, 64}
-PCM_BITS_PER_SAMPLE = {8, 16, 32, 64}
+PCM_BITS_PER_SAMPLE = {8, 16, 24, 32, 64}
 
 BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
 FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
@@ -12,15 +12,18 @@ FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
 
-# Making 24 bits work transparently is probably impossible:
-# https://stackoverflow.com/a/34128171/4383
-
 
 class ReadMap(raw.RawMap):
     """"Memory-map an existing wave file into a numpy matrix"""
 
     def __new__(
-        cls, filename, mode='r', order=None, always_2d=False, warn=raw.warn
+        cls,
+        filename,
+        mode='r',
+        order=None,
+        always_2d=False,
+        allow_conversion=True,
+        warn=raw.warn,
     ):
         file_size = raw.file_byte_size(filename)
 
@@ -62,6 +65,7 @@ class ReadMap(raw.RawMap):
             roffset=roffset,
             order=order,
             always_2d=always_2d,
+            allow_conversion=allow_conversion,
             warn=warn,
         )
 
