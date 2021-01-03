@@ -12,6 +12,8 @@ FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
 
+CHUNK_SIZE = constants.CHUNK_FORMAT.size
+
 
 class ReadMap(raw.RawMap):
     """"Memory-map an existing wave file into a numpy matrix"""
@@ -22,7 +24,8 @@ class ReadMap(raw.RawMap):
         file_size = raw.file_byte_size(filename)
 
         with open(filename, 'rb') as fp:
-            offset, end, fmt = _metadata(fp, warn, file_size)
+            begin, end, fmt = _metadata(fp, warn, file_size)
+            offset = begin + CHUNK_SIZE
             roffset = file_size - end
 
         (
@@ -32,7 +35,7 @@ class ReadMap(raw.RawMap):
             nAvgBytesPerSec,
             nBlockAlign,
             wBitsPerSample,
-        ) = constants.FMT_FORMAT.unpack(fmt[: constants.FMT_FORMAT.size])
+        ) = constants.FMT_FORMAT.unpack_from(fmt, CHUNK_SIZE)
 
         if wFormatTag not in constants.WAVE_FORMATS:
             raise ValueError(f'Do not understand wFormatTag={wFormatTag}')
@@ -79,14 +82,12 @@ def _metadata(fp, warn, file_size):
     for tag, b, e in chunks:
         if tag == b'fmt ':
             if not fmt:
-                b += constants.CHUNK_FORMAT.size
                 fp.seek(b)
                 fmt = fp.read(e - b)
             else:
                 warn('fmt chunk after first ignored')
         elif tag == b'data':
             if not (begin or end):
-                b += constants.CHUNK_FORMAT.size
                 begin, end = b, e
             else:
                 warn('data chunk after first ignored')
@@ -97,7 +98,7 @@ def _metadata(fp, warn, file_size):
     if fmt is None:
         raise ValueError('No fmt chunk found')
 
-    if len(fmt) not in FMT_BLOCK_LENGTHS:
+    if (len(fmt) - CHUNK_SIZE) not in FMT_BLOCK_LENGTHS:
         warn(f'Weird fmt block length {len(fmt)}')
 
     return begin, end, fmt
