@@ -30,6 +30,11 @@ class ReadMap(raw.RawMap):
             roffset = file_size - end
 
         f = wave.FMT_PCM.unpack_from(fmt)
+
+        if f.wFormatTag == wave.WAVE_FORMAT_EXTENSIBLE:
+            g = wave.FMT_EXTENSION.unpack_from(fmt, offset=wave.FMT_PCM.size)
+            f.wFormatTag = g.wFormatTag
+
         if f.wFormatTag not in wave.WAVE_FORMATS:
             raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 

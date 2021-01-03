@@ -100,6 +100,7 @@ def _test(filename, hard=False, assert_array_equal=assert_array_equal):
         assert file_sizes == byte_sizes
         assert wm1.shape == wm2.shape == wm3.shape
     else:
-        assert max(abs(f - b) for f, b in zip(file_sizes, byte_sizes)) <= 166
+        # This is a bit silly - we're measuring how much stuff we find in files
+        assert max(abs(f - b) for f, b in zip(file_sizes, byte_sizes)) <= 188
 
     return wm, b

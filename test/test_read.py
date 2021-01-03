@@ -22,6 +22,9 @@ class TestWaveMap(unittest.TestCase):
         dtypes = [str(s.dtype) for s in success]
         lengths = [s.shape[0] for s in success]
 
+        print(f'assert dtypes == {dtypes}')
+        print(f'assert lengths == {lengths}')
+
         assert dtypes == [
             'int16',
             'float32',
@@ -29,10 +32,19 @@ class TestWaveMap(unittest.TestCase):
             'int16',
             'float32',
             'float32',
+            'float32',
+            'float64',
             'float64',
             'int16',
+            'int16',
+            'int16',
+            'int32',
             'int32',
             'uint8',
+            'uint8',
+            'int16',
+            'int16',
+            'int16',
             'float32',
             'int16',
         ]
@@ -47,6 +59,15 @@ class TestWaveMap(unittest.TestCase):
             23493,
             23493,
             23493,
+            23493,
+            23493,
+            23493,
+            23493,
+            23493,
+            23493,
+            257411,
+            169031,
+            105507,
             29016,
             29016,
         ]
