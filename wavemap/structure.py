@@ -1,9 +1,9 @@
-"""Layouts of data in memory"""
+"""Better struct"""
 from argparse import Namespace
 import struct
 
 
-class Layout:
+class Structure:
     def __init__(self, **formats):
         self.formats = formats
         self.struct = struct.Struct('<' + ''.join(formats.values()))
@@ -64,17 +64,17 @@ TAG = '4s'
 INT = INT16, INT32
 BYTES = SUBFORMAT, TAG
 
-CHUNK = Layout(ckID=TAG, cksize=INT32)
-RIFF = Layout(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
-FACT = Layout(ckIDFact=TAG, cksizeFact=INT32, dwSampleLength=INT32)
-DATA = Layout(ckIDData=TAG, cksizeData=INT32)
+CHUNK = Structure(ckID=TAG, cksize=INT32)
+RIFF = Structure(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
+FACT = Structure(ckIDFact=TAG, cksizeFact=INT32, dwSampleLength=INT32)
+DATA = Structure(ckIDData=TAG, cksizeData=INT32)
 
 assert CHUNK.size == 8
 assert RIFF.size == 12
 assert FACT.size == 12
 assert DATA.size == 8
 
-FMT_PCM = Layout(
+FMT_PCM = Structure(
     ckIDFmt=TAG,
     cksizeFmt=INT32,
     wFormatTag=INT16,
@@ -85,9 +85,9 @@ FMT_PCM = Layout(
     wBitsPerSample=INT16,
 )
 
-FMT_NON_PCM = FMT_PCM + Layout(cbSize=INT16)
+FMT_NON_PCM = FMT_PCM + Structure(cbSize=INT16)
 
-FMT_EXTENSIBLE = FMT_NON_PCM + Layout(
+FMT_EXTENSIBLE = FMT_NON_PCM + Structure(
     wValidBitsPerSample=INT16, dwChannelMask=TAG, SubFormat=SUBFORMAT
 )
 
@@ -106,5 +106,5 @@ assert EXTENSIBLE.size == 68
 if __name__ == '__main__':
     d = list(locals().items())
     for k, v in d:
-        if isinstance(v, Layout):
+        if isinstance(v, Structure):
             print(f'assert {k}.size == {v.size}')

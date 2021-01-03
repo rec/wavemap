@@ -1,6 +1,6 @@
 from . import constants
 from . import raw
-from .layout import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
+from .structure import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
 import numpy as np
 
 CHUNK_HEADER = 8
@@ -22,12 +22,12 @@ class WriteMap(raw.RawMap):
 
         if issubclass(dtype.type, np.integer):
             wFormatTag = constants.WAVE_FORMAT_PCM
-            layout = PCM
-            fmt_layout = FMT_PCM
+            structure = PCM
+            fmt_structure = FMT_PCM
         else:
             wFormatTag = constants.WAVE_FORMAT_IEEE_FLOAT
-            layout = NON_PCM
-            fmt_layout = FMT_NON_PCM
+            structure = NON_PCM
+            fmt_structure = FMT_NON_PCM
 
         channel_count = 1 if len(shape) == 1 else min(shape)
         frame_count = max(shape)
@@ -43,21 +43,21 @@ class WriteMap(raw.RawMap):
             dtype=dtype,
             mode='w+',
             shape=shape,
-            offset=layout.size,
+            offset=structure.size,
             roffset=roffset + pad,
             warn=warn,
         )
 
-        self.file_size = layout.size + total_frame_bytes + pad
+        self.file_size = structure.size + total_frame_bytes + pad
         self.sample_rate = sample_rate
 
-        layout.pack_into(
+        structure.pack_into(
             self._mmap,
             ckIDRiff=b'RIFF',
             cksizeRiff=self.file_size - CHUNK_HEADER,
             WAVEID=b'WAVE',
             ckIDFmt=b'fmt ',
-            cksizeFmt=fmt_layout.size - CHUNK_HEADER,
+            cksizeFmt=fmt_structure.size - CHUNK_HEADER,
             wFormatTag=wFormatTag,
             nChannels=channel_count,
             nSamplesPerSec=sample_rate,

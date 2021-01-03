@@ -1,6 +1,6 @@
 from . import constants
-from . import layout
 from . import raw
+from . import structure
 import numpy as np
 import struct
 
@@ -12,7 +12,6 @@ FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
-CHUNK_SIZE = layout.CHUNK.size
 
 # Making 24 bits work transparently is probably impossible:
 # https://stackoverflow.com/a/34128171/4383
@@ -28,10 +27,10 @@ class ReadMap(raw.RawMap):
 
         with open(filename, 'rb') as fp:
             begin, end, fmt = _metadata(fp, warn, file_size)
-            offset = begin + CHUNK_SIZE
+            offset = begin + structure.CHUNK.size
             roffset = file_size - end
 
-        f = layout.FMT_PCM.unpack_from(fmt)
+        f = structure.FMT_PCM.unpack_from(fmt)
         if f.wFormatTag not in constants.WAVE_FORMATS:
             raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 
@@ -95,7 +94,7 @@ def _metadata(fp, warn, file_size):
     if fmt is None:
         raise ValueError('No fmt chunk found')
 
-    if (len(fmt) - CHUNK_SIZE) not in FMT_BLOCK_LENGTHS:
+    if (len(fmt) - structure.CHUNK.size) not in FMT_BLOCK_LENGTHS:
         warn(f'Weird fmt block length {len(fmt)}')
 
     return begin, end, fmt
