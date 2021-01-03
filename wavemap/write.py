@@ -1,6 +1,6 @@
 from . import constants
 from . import raw
-from .structure import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
+from .structure.wave import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
 import numpy as np
 
 CHUNK_HEADER = 8

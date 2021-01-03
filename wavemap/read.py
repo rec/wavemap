@@ -1,6 +1,6 @@
 from . import constants
 from . import raw
-from . import structure
+from .structure import wave
 import numpy as np
 import struct
 
@@ -27,10 +27,10 @@ class ReadMap(raw.RawMap):
 
         with open(filename, 'rb') as fp:
             begin, end, fmt = _metadata(fp, warn, file_size)
-            offset = begin + structure.CHUNK.size
+            offset = begin + wave.CHUNK.size
             roffset = file_size - end
 
-        f = structure.FMT_PCM.unpack_from(fmt)
+        f = wave.FMT_PCM.unpack_from(fmt)
         if f.wFormatTag not in constants.WAVE_FORMATS:
             raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 
@@ -94,7 +94,7 @@ def _metadata(fp, warn, file_size):
     if fmt is None:
         raise ValueError('No fmt chunk found')
 
-    if (len(fmt) - structure.CHUNK.size) not in FMT_BLOCK_LENGTHS:
+    if (len(fmt) - wave.CHUNK.size) not in FMT_BLOCK_LENGTHS:
         warn(f'Weird fmt block length {len(fmt)}')
 
     return begin, end, fmt
