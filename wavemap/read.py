@@ -1,4 +1,5 @@
 from . import constants
+from . import layout
 from . import raw
 import numpy as np
 import struct
@@ -11,8 +12,10 @@ FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
 
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
+CHUNK_SIZE = layout.CHUNK.size
 
-CHUNK_SIZE = constants.CHUNK_FORMAT.size
+# Making 24 bits work transparently is probably impossible:
+# https://stackoverflow.com/a/34128171/4383
 
 
 class ReadMap(raw.RawMap):
@@ -28,36 +31,30 @@ class ReadMap(raw.RawMap):
             offset = begin + CHUNK_SIZE
             roffset = file_size - end
 
-        (
-            wFormatTag,
-            nChannels,
-            nSamplesPerSec,
-            nAvgBytesPerSec,
-            nBlockAlign,
-            wBitsPerSample,
-        ) = constants.FMT_FORMAT.unpack_from(fmt, CHUNK_SIZE)
+        f = layout.FMT_PCM.unpack_from(fmt)
+        if f.wFormatTag not in constants.WAVE_FORMATS:
+            raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 
-        if wFormatTag not in constants.WAVE_FORMATS:
-            raise ValueError(f'Do not understand wFormatTag={wFormatTag}')
+        is_float = f.wFormatTag == constants.WAVE_FORMAT_IEEE_FLOAT
+        if f.wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
+            raise ValueError(
+                f'Cannot mmap f.wBitsPerSample={f.wBitsPerSample}'
+            )
 
-        is_float = wFormatTag == constants.WAVE_FORMAT_IEEE_FLOAT
-        if wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
-            raise ValueError(f'Cannot mmap wBitsPerSample={wBitsPerSample}')
-
-        if wBitsPerSample == 8:
+        if f.wBitsPerSample == 8:
             dtype = 'uint8'
         else:
             type_name = ('int', 'float')[is_float]
-            dtype = f'{type_name}{wBitsPerSample}'
+            dtype = f'{type_name}{f.wBitsPerSample}'
 
-        assert np.dtype(dtype).itemsize == wBitsPerSample // 8
+        assert np.dtype(dtype).itemsize == f.wBitsPerSample // 8
         self = raw.RawMap.__new__(
             cls,
             filename=filename,
             dtype=dtype,
             mode=mode,
             shape=None,
-            channel_count=nChannels,
+            channel_count=f.nChannels,
             offset=offset,
             roffset=roffset,
             order=order,
@@ -65,7 +62,7 @@ class ReadMap(raw.RawMap):
             warn=warn,
         )
 
-        self.sample_rate = nSamplesPerSec
+        self.sample_rate = f.nSamplesPerSec
         return self
 
 

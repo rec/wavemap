@@ -16,8 +16,8 @@ class Layout:
         return self.struct.pack_into(buffer, offset, *self._to_arg(kwargs))
 
     def unpack_from(self, buffer, offset=0):
-        parts = self.struct.unpack(buffer, offset)
-        return Namespace(**dict(zip(self.names, parts)))
+        parts = self.struct.unpack_from(buffer, offset)
+        return Namespace(**dict(zip(self.formats, parts)))
 
     def __add__(self, fmt):
         return __class__(**dict(self.formats, **fmt.formats))
