@@ -1,11 +1,14 @@
 🌊 Memory map WAVE files into numpy arrays 🌊
 
-The actual samples from a WAVE file appear as entries in a numpy array.
+.. image:: https://raw.githubusercontent.com/rec/wavemap/master/wavemap.png
+   :alt: WaveMap logo
+
+Samples from a WAVE or RAW audio file are directly memory mapped to entries in a
+``numpy`` array, letting you manipulate very large audio files as if they all
+fit into memory at one time, and even directly change samples on disk.
 
 See documentation for numpy.memmap
 
-If you open the file in 'r+' mode, you can even rewrite the samples on
-disk that way.
 
 API
 ===
@@ -15,7 +18,7 @@ Class ``wavemap.RawMap``
 
 (`wavemap.py, 57-118 <https://github.com/rec/wavemap/blob/master/wavemap.py#L57-L118>`_)
 
-"Memory map raw audio data from a disk file into a numpy matrix
+Memory map raw audio data from a disk file into a numpy matrix
 
 ``wavemap.RawMap.__new__()``
 ____________________________

@@ -17,40 +17,47 @@ class RawMap(memmap):
         cls,
         filename,
         dtype,
+        shape=None,
         mode='r',
-        shape=None,  # For writing
-        channel_count=None,  # For reading
         offset=0,
-        roffset=None,
+        roffset=0,
         order=None,
         always_2d=False,
         allow_conversion=True,
         warn=warn,
     ):
-        if (channel_count is None) == (shape is None):
-            raise ValueError('One of channel_count or shape must be set')
+        if not shape:
+            if 'w' in mode:
+                raise ValueError('Must set a shape in write mode')
+            shape = (1,)
+        elif isinstance(shape, int):
+            shape = (shape,)
+        if not (1 <= len(shape) <= 2):
+            raise ValueError('Wave files must have 1 or 2 dimensions')
 
-        if offset < 0 or roffset and roffset < 0:
+
+        channel_count, frame_count = sorted((shape + (1,))[:2])
+
+        if offset < 0 or roffset < 0:
             raise ValueError('offset and roffset must be non-negative')
 
         is_int24 = isinstance(dtype, str) and dtype == int24
         dt = np.dtype('uint8' if is_int24 else dtype)
 
         if 'w' in mode:
-            if shape is None:
-                raise ValueError('`shape` must be set in write mode')
             mode = 'w+'
 
-        elif not shape:
+        else:
             if is_int24:
                 channel_count *= 3
 
-            frame_bytes = dt.itemsize * channel_count
+            frame_size = dt.itemsize * channel_count
+            file_size = file_byte_size(filename)
 
-            audio_bytes = file_byte_size(filename) - offset - roffset
-            frame_count = audio_bytes // frame_bytes
+            audio_size = file_size - offset - roffset
+            frame_count = audio_size // frame_size
 
-            extra = audio_bytes % frame_bytes
+            extra = audio_size % frame_size
             if extra and warn:
                 s = '' if extra == 1 else 's'
                 warn(f'{extra} byte{s} after end-of-frame discarded')
@@ -65,20 +72,6 @@ class RawMap(memmap):
                 shape = channel_count, frame_count
             else:
                 raise ValueError(f'Bad order "{order}"')
-
-        else:
-            cc = channel_count
-            if len(shape) == 1:
-                frame_count = shape[0]
-                channel_count = 1
-
-            elif len(shape) == 2:
-                frame_count, channel_count = max(shape), min(shape)
-
-            else:
-                raise ValueError('Wave files can only have 1 or 2 dimensions')
-            if cc is not None and cc != channel_count:
-                warn('Setting shape overrides channel_count')
 
         order = order or 'FC'[max(shape) == shape[0]]
 
