@@ -26,61 +26,70 @@ class RawMap(memmap):
         allow_conversion=True,
         warn=warn,
     ):
-        if not shape:
-            if 'w' in mode:
-                raise ValueError('Must set a shape in write mode')
-            shape = (1,)
-        elif isinstance(shape, int):
-            shape = (shape,)
-        if not (1 <= len(shape) <= 2):
-            raise ValueError('Wave files must have 1 or 2 dimensions')
-
-
-        channel_count, frame_count = sorted((shape + (1,))[:2])
-
         if offset < 0 or roffset < 0:
             raise ValueError('offset and roffset must be non-negative')
 
-        is_int24 = isinstance(dtype, str) and dtype == int24
-        dt = np.dtype('uint8' if is_int24 else dtype)
-
-        if 'w' in mode:
+        is_write = 'w' in mode
+        if is_write:
             mode = 'w+'
 
+        if not shape:
+            if is_write:
+                raise ValueError('Must set a shape in write mode')
+            shape = (1,)
+
+        if isinstance(shape, int):
+            shape = (shape,)
+
+        if not (1 <= len(shape) <= 2):
+            raise ValueError('Wave files must have 1 or 2 dimensions')
+
+        is_int24 = str(dtype) == int24
+        dt = np.dtype('uint8' if is_int24 else dtype)
+
+        if is_write:
+            mode = 'w+'
+            order = order or 'FC'[max(shape) == shape[0]]
+            channels = min(shape)
+
         else:
+            channels, *rest = sorted(shape)
+            frames_requested = rest and rest[0] or 0
+
             if is_int24:
-                channel_count *= 3
+                channels *= 3
 
-            frame_size = dt.itemsize * channel_count
             file_size = file_byte_size(filename)
-
             audio_size = file_size - offset - roffset
+            frame_size = dt.itemsize * channels
             frame_count = audio_size // frame_size
 
-            extra = audio_size % frame_size
-            if extra and warn:
-                s = '' if extra == 1 else 's'
-                warn(f'{extra} byte{s} after end-of-frame discarded')
+            if frames_requested and frames_requested < frame_count:
+                warn(f'Requested {frames_requested} frames, got {frame_count}')
+                frame_count = frames_requested
+            elif warn:
+                extra = audio_size % frame_size
+                if extra:
+                    s = '' if extra == 1 else 's'
+                    warn(f'{extra} byte{s} after end-of-frame discarded')
 
             order = order or 'C'
 
-            if channel_count == 1 and not always_2d:
+            if channels == 1 and not always_2d:
                 shape = (frame_count,)
             elif order == 'C':
-                shape = frame_count, channel_count
+                shape = frame_count, channels
             elif order == 'F':
-                shape = channel_count, frame_count
+                shape = channels, frame_count
             else:
                 raise ValueError(f'Bad order "{order}"')
-
-        order = order or 'FC'[max(shape) == shape[0]]
 
         self = memmap.__new__(
             cls, filename, dt, mode, offset, shape, order, roffset
         )
 
         self.order = order
-        self.channnel_count = channel_count
+        self.channels = channels
         self.roffset = roffset
 
         if is_int24 and allow_conversion:
