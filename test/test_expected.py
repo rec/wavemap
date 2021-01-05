@@ -8,6 +8,7 @@ import wavemap
 class TestExpected(unittest.TestCase):
     @tdir
     def test_expected(self):
+        failures = []
         for filename in files.find():
             canonical = files.canonical(filename)
             local = Path(filename.name)
@@ -15,4 +16,6 @@ class TestExpected(unittest.TestCase):
             wavemap.copy_to(wm, local)
 
             b1, b2 = canonical.read_bytes(), local.read_bytes()
-            assert b1 == b2, str(filename.name)
+            if b1 != b2:
+                failures.append(filename.name)
+        assert failures == []
