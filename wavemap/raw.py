@@ -55,7 +55,7 @@ class RawMap(memmap):
                 raise ValueError('Must set a shape in write mode')
             mode = 'w+'
             order = order or 'FC'[max(shape) == shape[0]]
-            *rest, frame_count = sorted(shape)
+            *rest, frames = sorted(shape)
             channels = rest and rest[0] or 1
 
         else:
@@ -64,28 +64,34 @@ class RawMap(memmap):
 
             file_size = file_byte_size(filename)
             audio_size = file_size - offset - roffset
+            if is_int24:
+                extra = audio_size % 12
+                if extra and warn:
+                    s = 's' if len(extra) != 1 else ''
+                    warn(f'24-bit conversion lost last {extra} byte{s}, sorry')
+                audio_size -= extra
+
             frame_size = itemsize * channels
-            frame_count = audio_size // frame_size
+            frames = audio_size // frame_size
 
-            if frames_requested and frames_requested < frame_count:
-                warn(f'Requested {frames_requested} frames, got {frame_count}')
-                frame_count = frames_requested
+            if frames_requested and frames_requested < frames:
+                warn(f'Requested {frames_requested} frames, got {frames}')
+                frames = frames_requested
 
-            elif warn:
+            if warn:
                 extra = audio_size % frame_size
                 if extra:
                     s = '' if extra == 1 else 's'
                     warn(f'{extra} byte{s} after end-of-frame discarded')
 
             order = order or 'C'
-            frames = frame_count * frame_scale
 
             if channels == 1 and not always_2d:
-                shape = (frames,)
+                shape = (frames * frame_scale,)
             elif order == 'C':
-                shape = frames, channels
+                shape = frames, channels * frame_scale
             else:
-                shape = channels, frames
+                shape = channels * frame_scale, frames
 
         self = memmap.__new__(
             cls, filename, dt, mode, offset, shape, order, roffset
