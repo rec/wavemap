@@ -40,7 +40,14 @@ class RawMap(memmap):
             raise ValueError('Wave files must have 1 or 2 dimensions')
 
         is_int24 = str(dtype) == int24
-        dt = np.dtype('uint8' if is_int24 else dtype)
+        if is_int24:
+            dt = np.dtype('uint8')
+            itemsize = 3
+            frame_scale = 3
+        else:
+            dt = np.dtype(dtype)
+            itemsize = dt.itemsize
+            frame_scale = 1
 
         is_write = 'w' in mode
         if is_write:
@@ -55,17 +62,15 @@ class RawMap(memmap):
             channels, *rest = sorted(shape or (1,))
             frames_requested = rest and rest[0] or 0
 
-            if is_int24:
-                channels *= 3
-
             file_size = file_byte_size(filename)
             audio_size = file_size - offset - roffset
-            frame_size = dt.itemsize * channels
+            frame_size = itemsize * channels
             frame_count = audio_size // frame_size
 
             if frames_requested and frames_requested < frame_count:
                 warn(f'Requested {frames_requested} frames, got {frame_count}')
                 frame_count = frames_requested
+
             elif warn:
                 extra = audio_size % frame_size
                 if extra:
@@ -73,14 +78,14 @@ class RawMap(memmap):
                     warn(f'{extra} byte{s} after end-of-frame discarded')
 
             order = order or 'C'
+            frames = frame_count * frame_scale
+
             if channels == 1 and not always_2d:
-                shape = (frame_count,)
+                shape = (frames,)
             elif order == 'C':
-                shape = frame_count, channels
-            elif order == 'F':
-                shape = channels, frame_count
+                shape = frames, channels
             else:
-                raise ValueError(f'Bad order "{order}"')
+                shape = channels, frames
 
         self = memmap.__new__(
             cls, filename, dt, mode, offset, shape, order, roffset
