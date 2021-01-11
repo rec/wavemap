@@ -15,10 +15,10 @@ from .read import ReadMap as WaveReadMap
 from .write import WriteMap as WaveWriteMap
 
 __all__ = (
+    'WaveMap',
     'RawMap',
     'WaveReadMap',
     'WaveWriteMap',
-    'WaveMap',
     'copy_to',
     'new_like',
 )

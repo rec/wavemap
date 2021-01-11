@@ -5,3 +5,4 @@ target-version = ['py37']
 
 [tool.doks]
 auto = true
+source = 'wavemap/__init__.py'
