@@ -8,13 +8,41 @@ PCM_BITS_PER_SAMPLE = {8, 16, 24, 32, 64}
 
 BITS_PER_SAMPLE = PCM_BITS_PER_SAMPLE, FLOAT_BITS_PER_SAMPLE
 FMT_BLOCK_LENGTHS = {16, 18, 20, 40}
+MODES = 'r', 'r+', 'c'
 
 # Deal with a quirk in certain .WAV test files
 BAD_TAG_ADJUSTMENT = True
 
 
 class ReadMap(raw.RawMap):
-    """"Memory-map an existing wave file into a numpy matrix"""
+    f""""Memory-map an existing WAVE file into a numpy matrix
+
+    ARGUMENTS
+      filename:
+        the name of the file being mapped
+
+      mode:
+        The file is opened in this mode.  Must be one of `{MODES}`.
+        Default is `'r'`.
+
+      order:
+        Samples usually get laid out in into a `numpy.darray` of `shape=(N, C)`
+        where `N` is the number of audio frames, and `C` is the number of
+        channels.
+
+        This is called column major order, but this can be toggled by setting
+        the `order` parameter to `F` for Fortan or row-major row.
+
+        See https://stackoverflow.com/questions/27266338/
+
+      always_2d:
+        If `False`, the default, mono WAVE files with only one channel
+        get special treatment and are mapped to a one-dimensional vector
+        with `size=(N,)`.
+
+        If `True`, mono WAVE files are treated the same as any other file and
+        are mapped to a two-dimensional matrix with `size=(N, 1)`.
+    """
 
     def __new__(
         cls,
@@ -25,6 +53,9 @@ class ReadMap(raw.RawMap):
         allow_conversion=True,
         warn=raw.warn,
     ):
+        if mode not in MODES:
+            raise ValueError(f'Mode {mode} not in {MODES}')
+
         file_size = raw.file_byte_size(filename)
 
         with open(filename, 'rb') as fp:
@@ -42,6 +73,10 @@ class ReadMap(raw.RawMap):
             raise ValueError(f'Do not understand f.wFormatTag={f.wFormatTag}')
 
         is_float = f.wFormatTag == wave.WAVE_FORMAT_IEEE_FLOAT
+
+        if f.wBitsPerSample == 24:
+            raise ValueError('Reading 24-bit WAVEs is not quite supported')
+
         if f.wBitsPerSample not in BITS_PER_SAMPLE[is_float]:
             raise ValueError(
                 f'Cannot mmap f.wBitsPerSample={f.wBitsPerSample}'
