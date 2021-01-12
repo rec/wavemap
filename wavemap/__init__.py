@@ -15,7 +15,7 @@ disk that way.
 
 """
 
-from .raw import RawMap
+from .raw import RawMap, warn
 from .read import ReadMap as ReadMap
 from .write import WriteMap as WriteMap
 
@@ -31,6 +31,7 @@ __version__ = '0.9.1'
 
 copy_to = WriteMap.copy_to
 new_like = WriteMap.new_like
+_DOKS = {warn: '<function warn: print to stderr>'}
 
 
 def WaveMap(filename, mode='r', *args, **kwargs):
