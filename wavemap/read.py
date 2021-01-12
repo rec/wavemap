@@ -15,7 +15,7 @@ BAD_TAG_ADJUSTMENT = True
 
 
 class ReadMap(raw.RawMap):
-    f""""Memory-map an existing WAVE file into a numpy matrix
+    """Memory-map an existing WAVE file into a numpy matrix
 
     ARGUMENTS
       filename:
