@@ -1,18 +1,12 @@
 """
 🌊 Memory map WAVE files into numpy arrays 🌊
 
+.. image:: https://raw.githubusercontent.com/rec/wavemap/master/wavemap.png
+   :alt: WaveMap logo
 
-
-Reads and writes 8-bit, 16-bit, 32-bit and 64-bit integer WAVE files
-as well as 32-bit and
-
-The actual samples from a WAVE file appear as entries in a numpy array.
-
-See documentation for numpy.memmap
-
-If you open the file in 'r+' mode, you can even rewrite the samples on
-disk that way.
-
+Samples from a WAVE or RAW audio file are directly memory mapped to entries in
+a ``numpy`` array, letting you manipulate very large audio files as if they
+all fit into memory at one time, and even directly change samples on disk.
 """
 
 from .raw import RawMap, warn

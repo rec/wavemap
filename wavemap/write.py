@@ -15,15 +15,14 @@ class WriteMap(raw.RawMap):
     ):
         """
         ARGUMENTS
-        ARGUMENTS
-          filename:
+          filename
             the name of the file being mapped
 
-          mode:
+          mode
             The file is opened in this mode.  Must be one of `{MODES}`.
             Default is `'r'`.
 
-          order:
+          order
             Samples usually get laid out in into a `numpy.darray` with`
             shape=(N, C)` where `N` is the number of audio frames, and `C` is
             the number of channels.
@@ -33,10 +32,10 @@ class WriteMap(raw.RawMap):
 
             See https://stackoverflow.com/questions/27266338/
 
-          roffset:
+          roffset
             How many bytes in the file after the WAV data
 
-          always_2d:
+          always_2d
             If `False`, the default, mono WAVE files with only one channel
             get special treatment and are mapped to a one-dimensional vector
             with `size=(N,)`.
