@@ -1,3 +1,5 @@
+import inspect
+
 FILENAME = """The name of the file being mapped"""
 
 MODE = """
@@ -13,6 +15,11 @@ In mode `'r+'`, the file is opened read-write and changes to the
 In mode `'c'`, "copy-on-write", the file is opened read-only, but
 the `numpy.darray` is *not* immutable: changes to the array are
 instead stored in memory.
+"""
+
+CLS = """
+Think of this as `self`.  (This is because you need to implement `__new__`
+and not `__init__` when deriving from `np.darray`.)
 """
 
 ORDER = """
@@ -63,3 +70,9 @@ def arguments(*names):
         for line in globals()[name.upper()].strip().splitlines():
             yield line and f'    {line}'
         yield ''
+
+
+def update(func):
+    params = arguments(*inspect.signature(func).parameters)
+    func.__doc__ += '\n'.join(params)
+    return func
