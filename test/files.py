@@ -45,7 +45,7 @@ def canonical(filename):
 
 def copy_canonical():
     for f in find():
-        wavemap.copy_to(wavemap.WaveMap(f), canonical(f))
+        wavemap.copy_to(wavemap(f), canonical(f))
 
 
 if __name__ == '__main__':

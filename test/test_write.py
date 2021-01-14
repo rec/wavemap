@@ -9,7 +9,7 @@ import wavemap
 
 class TestWaveWrite(unittest.TestCase):
     def test_write1(self):
-        wm = wavemap.WaveMap(next(files.find('int16')))
+        wm = wavemap(next(files.find('int16')))
         assert wm.shape == (23493, 2)
 
     @tdir
@@ -79,7 +79,7 @@ def _find(s, hard=False):
 
 
 def _test(filename, hard=False, assert_array_equal=assert_array_equal):
-    wm1 = wavemap.WaveMap(filename)
+    wm1 = wavemap(filename)
 
     localfile = Path(filename.name)
     wm2 = wavemap.copy_to(wm1, localfile)

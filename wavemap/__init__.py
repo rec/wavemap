@@ -21,6 +21,7 @@ from .raw import RawMap, warn
 from .read import ReadMap as ReadMap
 from .write import WriteMap as WriteMap
 import inspect
+import xmod
 
 __all__ = (
     'WaveMap',
@@ -38,6 +39,7 @@ new_like = WriteMap.new_like
 _DOKS = {warn: '<function warn: print to stderr>'}
 
 
+@xmod
 def WaveMap(filename, mode='r', *args, **kwargs):
     """
     Memory map a WAVE file to a `numpy` array

@@ -5,13 +5,13 @@ import wavemap
 
 class TestWaveMap(unittest.TestCase):
     def test_snare(self):
-        wavemap.WaveMap(next(files.find('Kick')))
+        wavemap(next(files.find('Kick')))
 
     def test_existing(self):
         success, failure = [], []
         for f in files.WAVE_FILES:
             try:
-                success.append(wavemap.WaveMap(f))
+                success.append(wavemap(f))
             except Exception as e:
                 if not True:
                     raise
@@ -76,7 +76,7 @@ class TestWaveMap(unittest.TestCase):
         warnings = []
         for w in files.find():
             warnings.append([])
-            wavemap.WaveMap(w, warn=warnings[-1].append)
+            wavemap(w, warn=warnings[-1].append)
 
         first, *rest = warnings
 
@@ -85,5 +85,5 @@ class TestWaveMap(unittest.TestCase):
 
     def test_error(self):
         with self.assertRaises(ValueError) as m:
-            wavemap.WaveMap(__file__)
+            wavemap(__file__)
         assert m.exception.args[0] == 'Not a RIFF file'

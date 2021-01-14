@@ -12,7 +12,7 @@ class TestExpected(unittest.TestCase):
         for filename in files.find():
             canonical = files.canonical(filename)
             local = Path(filename.name)
-            wm = wavemap.WaveMap(filename)
+            wm = wavemap(filename)
             wavemap.copy_to(wm, local)
 
             b1, b2 = canonical.read_bytes(), local.read_bytes()

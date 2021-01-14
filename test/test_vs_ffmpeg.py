@@ -1,12 +1,12 @@
 from . import files
 from numpy.testing import assert_array_equal
 from pathlib import Path
-from wavemap import WaveMap
 import numpy as np
 import os
 import subprocess
 import tdir
 import unittest
+import wavemap
 
 IS_TRAVIS = os.getenv('TRAVIS', '').lower().startswith('t')
 skip_if_travis = unittest.skipIf(IS_TRAVIS, 'Test does not work in travis')
@@ -20,14 +20,14 @@ class TestCanonical(unittest.TestCase):
         # floating point!
         for infile in files.find():
             # print('-->', infile)
-            w_in = WaveMap(infile)
+            w_in = wavemap(infile)
 
             outfile = Path(infile.name)
             assert outfile.suffix == '.wav'
             fmt = _to_format(w_in.dtype)
             canonical(infile, outfile, fmt)
 
-            w_out = WaveMap(outfile)
+            w_out = wavemap(outfile)
             assert w_in.sample_rate == w_out.sample_rate
             assert w_in.dtype == w_out.dtype
 
