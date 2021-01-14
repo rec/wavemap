@@ -2,6 +2,9 @@
 
 .. image:: https://raw.githubusercontent.com/rec/wavemap/master/wavemap.png
    :alt: WaveMap logo
+   :width: 500px
+   :height: 500px
+   :scale: 50%
 
 Samples from a WAVE or RAW audio file are directly memory mapped to entries in a
 ``numpy`` array, letting you manipulate very large audio files as if they all
