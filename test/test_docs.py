@@ -12,6 +12,7 @@ class TestDocs(unittest.TestCase):
             expected.pop(0)
         actual = list(
             docs.arguments(
+                'cls',
                 'filename',
                 'mode',
                 'order',
@@ -34,6 +35,10 @@ READMAP_DOC = """\
 Memory-map an existing WAVE file into a numpy matrix.
 
 ARGUMENTS
+  cls
+    Think of this as `self`.  (This is because you need to implement `__new__`
+    and not `__init__` when deriving from `np.darray`.)
+
   filename
     The name of the file being mapped
 

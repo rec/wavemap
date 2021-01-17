@@ -1,4 +1,4 @@
-# from numpy.lib.stride_tricks import as_strided
+from . import docs
 from .memmap import memmap
 from numpy.lib.stride_tricks import as_strided
 import numpy as np
@@ -14,6 +14,7 @@ def warn(msg):
 class RawMap(memmap):
     """"Memory map raw audio data from a disk file into a numpy matrix"""
 
+    @docs.update(mode='WRITE_MODE')
     def __new__(
         cls,
         filename,
@@ -27,6 +28,8 @@ class RawMap(memmap):
         allow_conversion=True,
         warn=warn,
     ):
+        """Memory map raw audio data from a disk file into a numpy matrix"""
+
         def new(shape=shape, dtype=dtype, order=order, mode=mode):
             return memmap.__new__(
                 cls, filename, dtype, mode, offset, shape, order, roffset

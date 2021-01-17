@@ -1,3 +1,4 @@
+from . import docs
 from . import raw
 from .structure import wave
 from .structure.wave import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
@@ -10,38 +11,13 @@ DEFAULT_SAMPLE_RATE = 44100
 class WriteMap(raw.RawMap):
     """"Memory-map a new wave file into a new numpy vector or matrix"""
 
+    @docs.update
     def __new__(
         cls, filename, dtype, shape, sample_rate, roffset=0, warn=raw.warn
     ):
         """
-        ARGUMENTS
-          filename
-            the name of the file being mapped
-
-          mode
-            The file is opened in this mode.  Must be one of `{MODES}`.
-            Default is `'r'`.
-
-          order
-            Samples usually get laid out in into a `numpy.darray` with`
-            shape=(N, C)` where `N` is the number of audio frames, and `C` is
-            the number of channels.
-
-            This is called column major order, but this can be toggled by
-            setting the `order` parameter to `F` for Fortan or row-major row.
-
-            See https://stackoverflow.com/questions/27266338/
-
-          roffset
-            How many bytes in the file after the WAV data
-
-          always_2d
-            If `False`, the default, mono WAVE files with only one channel
-            get special treatment and are mapped to a one-dimensional vector
-            with `size=(N,)`.
-
-            If `True`, mono WAVE files are treated the same as any other file
-            and are mapped to a two-dimensional matrix with `size=(N, 1)`.
+        Open a memory-mapped WAVE file in write mode.
+        Overwrite any existing file.
         """
         dtype = np.dtype(dtype)
 
