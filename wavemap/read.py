@@ -17,7 +17,7 @@ BAD_TAG_ADJUSTMENT = True
 class ReadMap(raw.RawMap):
     """Memory-map an existing WAVE file into a numpy vector or matrix"""
 
-    @docs.update
+    @docs.update(mode='READ_ONLY_MODE')
     def __new__(
         cls,
         filename,

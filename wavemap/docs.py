@@ -40,7 +40,7 @@ setting the `order` parameter to `F` for Fortan or row-major row.
 See https://stackoverflow.com/questions/27266338/
 """
 
-MODE = """
+READ_ONLY_MODE = """
 The file is opened in this mode.
 Must be one of `'r'`, `'r+'` and `'c'`.
 
@@ -55,7 +55,7 @@ the `numpy.darray` is *not* immutable: changes to the array are
 instead stored in memory.
 """
 
-WRITE_MODE = """
+MODE = """
 The file is opened in this mode.
 Must be one of `'r'`, `'r+'`, `'c'`, `'w+'`
 
@@ -93,17 +93,24 @@ you can pass your own callback in
 
 def arguments(*names, subs=None):
     subs = subs or {}
-    names = [subs.get(i, i) for i in names]
-    missing = [n for n in names if n.upper() not in globals()]
+    # TODO: wrong name gets put here in a substitution
+    names = [(i, subs.get(i, i).upper()) for i in names]
+    missing = [n for (n, a) in names if a not in globals()]
     if missing:
         raise ValueError(f'Cannot document arguments {missing}')
 
     yield 'ARGUMENTS'
-    for name in names:
+    for name, attr in names:
         yield f'  {name}'
-        for line in globals()[name.upper()].strip().splitlines():
+        for line in globals()[attr].strip().splitlines():
             yield line and f'    {line}'
         yield ''
+
+
+def add_arguments(func, names, subs=None):
+    params = arguments(*names, subs=subs)
+    func.__doc__ = func.__doc__.rstrip() + '\n\n' + '\n'.join(params)
+    return func
 
 
 def update(func=None, **subs):
@@ -111,9 +118,7 @@ def update(func=None, **subs):
 
     def updater(func, subs=None):
         names = inspect.signature(func).parameters
-        params = arguments(*names, subs=subs)
-        func.__doc__ = func.__doc__.rstrip() + '\n\n' + '\n'.join(params)
-        return func
+        return add_arguments(func, names, subs=subs)
 
     if func:
         return updater(func)

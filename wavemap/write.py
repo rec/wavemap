@@ -16,9 +16,10 @@ class WriteMap(raw.RawMap):
         cls, filename, dtype, shape, sample_rate, roffset=0, warn=raw.warn
     ):
         """
-        Open a memory-mapped WAVE file in write mode.
-        Overwrite any existing file.
+        Open a memory-mapped WAVE file in write mode and overwrite any existing
+        file.
         """
+        # Documentation for parameters is in docs.py
         dtype = np.dtype(dtype)
 
         if issubclass(dtype.type, np.integer):

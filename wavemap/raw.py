@@ -14,7 +14,7 @@ def warn(msg):
 class RawMap(memmap):
     """"Memory map raw audio data from a disk file into a numpy matrix"""
 
-    @docs.update(mode='WRITE_MODE')
+    @docs.update
     def __new__(
         cls,
         filename,
@@ -29,6 +29,7 @@ class RawMap(memmap):
         warn=warn,
     ):
         """Memory map raw audio data from a disk file into a numpy matrix"""
+        # Documentation for parameters is in docs.py
 
         def new(shape=shape, dtype=dtype, order=order, mode=mode):
             return memmap.__new__(

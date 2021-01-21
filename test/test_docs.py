@@ -1,27 +1,12 @@
-from wavemap import docs, ReadMap
+from wavemap import ReadMap
 import inspect
 import unittest
 
 
 class TestDocs(unittest.TestCase):
     def test_docs(self):
-        doc = inspect.getdoc(ReadMap.__new__)
-        assert doc == READMAP_DOC
-        expected = inspect.getdoc(ReadMap.__new__).splitlines()
-        while expected[0] != 'ARGUMENTS':
-            expected.pop(0)
-        actual = list(
-            docs.arguments(
-                'cls',
-                'filename',
-                'mode',
-                'order',
-                'always_2d',
-                'allow_conversion',
-                'warn',
-            )
-        )
-        assert actual.pop() == ''
+        actual = inspect.getdoc(ReadMap.__new__)
+        expected = READMAP_DOC
         if expected != actual:
             print('expected', '------', '', *expected, sep='\n')
             print
