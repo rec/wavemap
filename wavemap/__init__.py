@@ -1,12 +1,19 @@
-"""
-🌊 Memory map WAVE files into numpy arrays 🌊
+"""🌊 Memory map WAVE files into numpy arrays 🌊
+----------------------------------------------
 
 .. image:: https://raw.githubusercontent.com/rec/wavemap/master/wavemap.png
    :alt: WaveMap logo
 
+Manipulate huge WAVE or RAW files as numpy matrices - even if they are too
+large to fit into memory.
+
+Memory mapping is a technique where files on disk are directly mapped to
+locations in memory and use the same logic as swap space does.
+
 Samples from a WAVE or RAW audio file are directly memory mapped to entries in
 a ``numpy`` array, letting you manipulate very large audio files as if they
 all fit into memory at one time, and even directly change samples on disk.
+
 """
 from . import docs
 from .raw import RawMap, warn
