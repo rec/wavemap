@@ -16,6 +16,7 @@ all fit into memory at one time, and even directly change samples on disk.
 
 """
 from . import docs
+from .convert import convert
 from .raw import RawMap, warn
 from .read import ReadMap as ReadMap
 from .write import WriteMap as WriteMap
@@ -28,6 +29,7 @@ __all__ = (
     'WriteMap',
     'copy_to',
     'new_like',
+    'convert',
 )
 __version__ = '0.9.1'
 
