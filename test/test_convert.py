@@ -23,14 +23,10 @@ class TestConvert(unittest.TestCase):
 
         conv(u8, 'int8')
         u16 = conv(u8, 'uint16')
-        assert 0 == np.amin(u16)
-        assert 0xFF00 == np.amax(u16)
+        assert 0x80 == np.amin(u16)
+        assert 0xFF80 == np.amax(u16)
 
         conv(u8, 'int8')
-
-        u16 = conv(u8, 'uint16')
-        assert 0 == np.amin(u16)
-        assert 0xFF00 == np.amax(u16)
 
         f32 = conv(u8, 'float32')
         assert np.amin(f32) == -1

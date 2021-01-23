@@ -14,7 +14,19 @@ Samples from a WAVE or RAW audio file are directly memory mapped to entries in
 a ``numpy`` array, letting you manipulate very large audio files as if they
 all fit into memory at one time, and even directly change samples on disk.
 
+Typical usage:
+
+.. code-block:: python
+
+    import wavemap
+
+    wm = wavemap('test.wav', 'r+')  # r+ means read/write
+    # Now you have a numpy matrix that you can use like any other
+
+    wm /= 2
+    # Each sample in the file is scaled by half.
 """
+
 from . import docs
 from .convert import convert
 from .raw import RawMap, warn
