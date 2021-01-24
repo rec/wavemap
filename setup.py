@@ -15,7 +15,7 @@ _classifiers = [
 
 
 def _version():
-    with open('wavemap.py') as fp:
+    with open('wavemap/__init__.py') as fp:
         line = next(i for i in fp if i.startswith('__version__'))
         return line.strip().split()[-1].strip("'")
 
