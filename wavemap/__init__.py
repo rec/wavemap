@@ -44,7 +44,7 @@ __all__ = (
     'new_like',
     'convert',
 )
-__version__ = '0.9.1'
+__version__ = '1.0.0'
 
 copy_to = WriteMap.copy_to
 new_like = WriteMap.new_like
