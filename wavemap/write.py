@@ -2,6 +2,7 @@ from . import docs
 from . import raw
 from .structure import wave
 from .structure.wave import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
+from typing import Callable, Optional, Type, Union
 import numpy as np
 
 CHUNK_HEADER = 8
@@ -13,7 +14,13 @@ class WriteMap(raw.RawMap):
 
     @docs.update
     def __new__(
-        cls, filename, dtype, shape, sample_rate, roffset=0, warn=raw.warn
+        cls: Type,
+        filename: str,
+        dtype: np.dtype,
+        shape: Union[None, int, tuple],
+        sample_rate: int,
+        roffset: int = 0,
+        warn: Optional[Callable] = raw.warn,
     ):
         """
         Open a memory-mapped WAVE file in write mode and overwrite any existing
@@ -78,7 +85,12 @@ class WriteMap(raw.RawMap):
 
     @classmethod
     def new_like(
-        cls, arr, filename, sample_rate=None, roffset=None, warn=raw.warn
+        cls: Type,
+        arr: np.ndarray,
+        filename: str,
+        sample_rate: Optional[int] = None,
+        roffset: Optional[int] = None,
+        warn: Optional[Callable] = raw.warn,
     ):
         if sample_rate is None:
             sample_rate = getattr(arr, 'sample_rate', DEFAULT_SAMPLE_RATE)
@@ -90,7 +102,12 @@ class WriteMap(raw.RawMap):
 
     @classmethod
     def copy_to(
-        cls, arr, filename, sample_rate=None, roffset=None, warn=raw.warn
+        cls: Type,
+        arr: np.ndarray,
+        filename: str,
+        sample_rate: Optional[int] = None,
+        roffset: Optional[int] = None,
+        warn: Optional[Callable] = raw.warn,
     ):
         wm = cls.new_like(arr, filename, sample_rate, roffset, warn)
         np.copyto(src=arr, dst=wm, casting='no')

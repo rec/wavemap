@@ -26,17 +26,17 @@ Typical usage:
     wm /= 2
     # Each sample in the file is scaled by half.
 """
-
 from . import docs
 from .convert import convert
 from .raw import RawMap, warn
 from .read import ReadMap as ReadMap
 from .write import WriteMap as WriteMap
-import inspect
+from typing import Callable, Optional, Union
+import numpy as np
 import xmod
 
 __all__ = (
-    'WaveMap',
+    'wavemap',
     'RawMap',
     'ReadMap',
     'WriteMap',
@@ -49,10 +49,33 @@ __version__ = '0.9.1'
 copy_to = WriteMap.copy_to
 new_like = WriteMap.new_like
 _DOKS = {warn: '<function warn: print to stderr>'}
+_WRITE_PARAMETERS = 'dtype', 'shape', 'sample_rate'
+_READ_PARAMETERS = 'order', 'always_2d'
 
 
 @xmod
-def WaveMap(filename, mode='r', *args, **kwargs):
+@docs.update
+def wavemap(
+    filename: str,
+    #
+    # Read parameters
+    #
+    mode: str = 'r',
+    order: Optional[str] = None,
+    always_2d: bool = False,
+    allow_conversion: bool = True,
+    #
+    # Write parameters
+    #
+    dtype: Optional[np.dtype] = None,
+    shape: Union[None, int, tuple] = None,
+    sample_rate: int = 0,
+    roffset: int = 0,
+    #
+    # Read and write
+    #
+    warn: Optional[Callable] = warn,
+):
     """
     Memory map a WAVE file to a `numpy` array
 
@@ -60,13 +83,39 @@ def WaveMap(filename, mode='r', *args, **kwargs):
     `mode`.
     """
     if mode.startswith('w'):
-        return WriteMap(filename, *args, **kwargs)
-    return ReadMap(filename, mode, *args, **kwargs)
+        if not dtype:
+            raise ValueError('dtype must be set for write')
+        if not shape:
+            raise ValueError('shape must be set for write')
+        if not sample_rate:
+            raise ValueError('sample_rate must be set for write')
 
+        if order:
+            raise ValueError('order cannot be set for write')
+        if always_2d:
+            raise ValueError('always_2d cannot be set for write')
 
-def _add_doc():
-    names = list(inspect.signature(ReadMap).parameters)
-    for name in inspect.signature(WriteMap).parameters:
-        if name not in names:
-            names.append(name)
-    docs.add_arguments(WaveMap, names)
+        return WriteMap(
+            filename=filename,
+            dtype=dtype,
+            shape=shape,
+            sample_rate=sample_rate,
+            roffset=roffset,
+            warn=warn,
+        )
+    else:
+        if dtype:
+            raise ValueError('dtype cannot be set for write')
+        if shape:
+            raise ValueError('shape cannot be set for write')
+        if sample_rate:
+            raise ValueError('sample_rate cannot be set for write')
+
+        return ReadMap(
+            filename=filename,
+            mode=mode,
+            order=order,
+            always_2d=always_2d,
+            allow_conversion=allow_conversion,
+            warn=warn,
+        )

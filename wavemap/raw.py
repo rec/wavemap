@@ -1,6 +1,7 @@
 from . import docs
 from .memmap import memmap
 from numpy.lib.stride_tricks import as_strided
+from typing import Callable, Optional, Union
 import numpy as np
 import sys
 
@@ -17,16 +18,16 @@ class RawMap(memmap):
     @docs.update
     def __new__(
         cls,
-        filename,
-        dtype,
-        shape=None,
-        mode='r',
-        offset=0,
-        roffset=0,
-        order=None,
-        always_2d=False,
-        allow_conversion=True,
-        warn=warn,
+        filename: str,
+        dtype: np.dtype,
+        shape: Union[tuple, int, None] = None,
+        mode: str = 'r',
+        offset: int = 0,
+        roffset: int = 0,
+        order: Optional[str] = None,
+        always_2d: bool = False,
+        allow_conversion: bool = True,
+        warn: Optional[Callable] = warn,
     ):
         """Memory map raw audio data from a disk file into a numpy matrix"""
         # Documentation for parameters is in docs.py
@@ -81,17 +82,9 @@ class RawMap(memmap):
         return result
 
 
-def file_byte_size(filename):
+def file_byte_size(filename: str):
     with open(filename, 'rb') as fp:
         return fp.seek(0, 2)
-
-
-def dump_locals():
-    from numbers import Number
-
-    for k, v in locals().items():
-        if isinstance(v, (Number, tuple, str)):
-            print(f'{k} = {v!r}')
 
 
 def _get_shape(shape, audio_size, itemsize, order, always_2d, warn):

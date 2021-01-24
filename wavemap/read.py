@@ -1,5 +1,6 @@
 from . import docs, raw
 from .structure import wave
+from typing import Callable, Optional, Type
 import numpy as np
 import struct
 
@@ -19,13 +20,13 @@ class ReadMap(raw.RawMap):
 
     @docs.update(mode='READ_ONLY_MODE')
     def __new__(
-        cls,
-        filename,
-        mode='r',
-        order=None,
-        always_2d=False,
-        allow_conversion=True,
-        warn=raw.warn,
+        cls: Type,
+        filename: str,
+        mode: str = 'r',
+        order: Optional[str] = None,
+        always_2d: bool = False,
+        allow_conversion: bool = True,
+        warn: Optional[Callable] = raw.warn,
     ):
         # Documentation for parameters is in docs.py
         """Memory-map an existing WAVE file into a numpy matrix."""

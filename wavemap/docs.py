@@ -79,7 +79,7 @@ SAMPLE_RATE = 'The sample rate in Hz (cycles per second)'
 
 SHAPE = """
 The shape of the resulting numpy.darray. Can be a tuple, or a positive
-integer, or None.
+integer, or `None`.
 """
 
 WARN = """

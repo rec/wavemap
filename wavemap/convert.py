@@ -1,23 +1,24 @@
 import numpy as np
 
 
-def convert(arr, dtype, force_copy=False):
+# def convert(arr: np.ndarray, dtype: np.dtype):
+def convert(arr: np.ndarray, dtype: np.dtype):
     """
-    Converts a numpy array or matrix that represents audio data to another
-    type, scaling and shifting as necessary
+    Returns a copy of a numpy array or matrix that represents audio data in
+    another type, scaling and shifting as necessary.
 
     ARGUMENTS
       arr
-        a numpy darry representing an audio signal
+        A numpy darry representing an audio signal
 
       dtype
-        the numpy dtype to convert
+        The numpy dtype to convert to
     """
     new_t = np.dtype(dtype)
     old_t = arr.dtype
 
     if new_t == old_t:
-        return np.copy(arr) if force_copy else arr
+        return np.copy(arr)
 
     old_int = 'int' in str(old_t)
     new_int = 'int' in str(new_t)
