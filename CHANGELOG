@@ -1,3 +1,8 @@
+## v1.1.0 - 21/02/20
+
+* Allow dtype in read
+* New always_copy parameter to convert
+
 ## v1.0.0 - 21/01/24
 
 * First release
