@@ -30,7 +30,7 @@ if __name__ == '__main__':
         author='Tom Ritchford',
         author_email='tom@swirly.com',
         url='https://github.com/rec/wavemap',
-        py_modules=['wavemap'],
+        packages=['wavemap'],
         description='Memory map WAVE or raw audio files',
         long_description=open('README.rst').read(),
         license='MIT',
