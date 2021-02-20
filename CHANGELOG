@@ -1,3 +1,7 @@
+## v1.1.1 - 21/02/20
+
+* Fix setup.py to export wavemap package
+
 ## v1.1.0 - 21/02/20
 
 * Allow dtype in read
