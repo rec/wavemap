@@ -67,13 +67,13 @@ def wavemap(
     #
     # Write parameters
     #
-    dtype: Optional[np.dtype] = None,
     shape: Union[None, int, tuple] = None,
     sample_rate: int = 0,
     roffset: int = 0,
     #
-    # Read and write
+    # Read and write parameters
     #
+    dtype: Optional[np.dtype] = None,
     warn: Optional[Callable] = warn,
 ):
     """
@@ -104,14 +104,12 @@ def wavemap(
             warn=warn,
         )
     else:
-        if dtype:
-            raise ValueError('dtype cannot be set for write')
         if shape:
             raise ValueError('shape cannot be set for write')
         if sample_rate:
             raise ValueError('sample_rate cannot be set for write')
 
-        return ReadMap(
+        result = ReadMap(
             filename=filename,
             mode=mode,
             order=order,
@@ -119,3 +117,6 @@ def wavemap(
             allow_conversion=allow_conversion,
             warn=warn,
         )
+        if dtype is not None:
+            result = convert(result, dtype)
+        return result
