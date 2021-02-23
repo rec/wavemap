@@ -25,7 +25,6 @@ class ReadMap(raw.RawMap):
         mode: str = 'r',
         order: Optional[str] = None,
         always_2d: bool = False,
-        allow_conversion: bool = True,
         warn: Optional[Callable] = raw.warn,
     ):
         # Documentation for parameters is in docs.py
@@ -77,7 +76,6 @@ class ReadMap(raw.RawMap):
             roffset=roffset,
             order=order,
             always_2d=always_2d,
-            allow_conversion=allow_conversion,
             warn=warn,
         )
 

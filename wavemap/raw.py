@@ -1,6 +1,5 @@
 from . import docs
 from .memmap import memmap
-from numpy.lib.stride_tricks import as_strided
 from typing import Callable, Optional, Union
 import numpy as np
 import sys
@@ -26,7 +25,6 @@ class RawMap(memmap):
         roffset: int = 0,
         order: Optional[str] = None,
         always_2d: bool = False,
-        allow_conversion: bool = True,
         warn: Optional[Callable] = warn,
     ):
         """Memory map raw audio data from a disk file into a numpy matrix"""
@@ -63,23 +61,9 @@ class RawMap(memmap):
         file_size = file_byte_size(filename)
         audio_size = file_size - offset - roffset
         shape = _get_shape(shape, audio_size, itemsize, order, always_2d, warn)
-        if itemsize != 3:
-            return new(shape=shape)
-
-        frames = shape[0] * (shape[1] if len(shape) else 1)
-        assert not (frames % 4)
-
-        # https://stackoverflow.com/a/34128171/4383
-        raw = new(shape=(itemsize * frames // 4,), dtype='int32')
-        strided = as_strided(raw, strides=(12, 3,), shape=(frames, 4))
-        reshaped = np.reshape(strided, shape=shape)
-
-        if not allow_conversion:
-            return reshaped
-
-        result = reshaped & 0x00FFFFFF
-        result *= 0x100
-        return result
+        if itemsize == 3:
+            raise ValueError('Cannot memory map 24-bit audio')
+        return new(shape=shape)
 
 
 def file_byte_size(filename: str):

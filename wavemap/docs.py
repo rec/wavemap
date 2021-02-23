@@ -1,16 +1,6 @@
 import functools
 import inspect
 
-ALLOW_CONVERSION = """
-Some types of WAVE files cannot be directedly memory-mapped because
-their datatype is not supported by numpy - the list includes
-24-bit PCM, 8-bit µ-Law, and 8-bit A-law.
-
-If `allow_conversion` is `True`, the default, the result is
-converted to a numpy type.  If it is `False`, then the result is
-not converted and returned as numpy array of raw bytes
-"""
-
 ALWAYS_2D = """
 If `False`, the default, mono WAVE files with only one channel
 get special treatment and are mapped to a one-dimensional vector

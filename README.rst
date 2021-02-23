@@ -29,25 +29,24 @@ Typical usage:
 API
 ===
 
-``wavemap/__init__()``
+``wavemap()``
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-  wavemap/__init__(
+  wavemap(
        filename: str,
        mode: str='r',
        order: Union[str, NoneType]=None,
        always_2d: bool=False,
-       allow_conversion: bool=True,
+       dtype: Union[numpy.dtype, NoneType]=None,
        shape: Union[NoneType, int, tuple]=None,
        sample_rate: int=0,
        roffset: int=0,
-       dtype: Union[numpy.dtype, NoneType]=None,
        warn: Union[Callable, NoneType]='<function warn:  print to stderr>',
   )
 
-(`wavemap/__init__.py, 56-123 <https://github.com/rec/wavemap/blob/master/wavemap/__init__.py#L56-L123>`_)
+(`wavemap/__init__.py, 56-121 <https://github.com/rec/wavemap/blob/master/wavemap/__init__.py#L56-L121>`_)
 
     Memory map a WAVE file to a ``numpy`` array
 
@@ -93,14 +92,8 @@ ARGUMENTS
     If ``True``, mono WAVE files are treated the same as any other file
     and are mapped to a two-dimensional matrix with ``size=(N, 1)``.
 
-  allow_conversion
-    Some types of WAVE files cannot be directedly memory-mapped because
-    their datatype is not supported by numpy - the list includes
-    24-bit PCM, 8-bit µ-Law, and 8-bit A-law.
-
-    If ``allow_conversion`` is ``True``, the default, the result is
-    converted to a numpy type.  If it is ``False``, then the result is
-    not converted and returned as numpy array of raw bytes
+  dtype
+    The numpy datatype of the samples in the file.
 
   shape
     The shape of the resulting numpy.darray. Can be a tuple, or a positive
@@ -112,9 +105,6 @@ ARGUMENTS
   roffset
     How many bytes in the file after the WAV data
 
-  dtype
-    The numpy datatype of the samples in the file.
-
   warn
     Programmers are sloppy so quite a lot of real-world WAVE files have
     recoverable errors in their format.  ``warn`` is the function used to
@@ -125,7 +115,7 @@ ARGUMENTS
 Class ``wavemap.RawMap``
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-(`wavemap/raw.py, 15-83 <https://github.com/rec/wavemap/blob/master/wavemap/raw.py#L15-L83>`_)
+(`wavemap/raw.py, 14-67 <https://github.com/rec/wavemap/blob/master/wavemap/raw.py#L14-L67>`_)
 
 "Memory map raw audio data from a disk file into a numpy matrix
 
@@ -144,11 +134,10 @@ ____________________________
        roffset: int=0,
        order: Union[str, NoneType]=None,
        always_2d: bool=False,
-       allow_conversion: bool=True,
        warn: Union[Callable, NoneType]='<function warn:  print to stderr>',
   )
 
-(`wavemap/raw.py, 18-83 <https://github.com/rec/wavemap/blob/master/wavemap/raw.py#L18-L83>`_)
+(`wavemap/raw.py, 17-67 <https://github.com/rec/wavemap/blob/master/wavemap/raw.py#L17-L67>`_)
 
 Memory map raw audio data from a disk file into a numpy matrix
 
@@ -208,15 +197,6 @@ ARGUMENTS
     If ``True``, mono WAVE files are treated the same as any other file
     and are mapped to a two-dimensional matrix with ``size=(N, 1)``.
 
-  allow_conversion
-    Some types of WAVE files cannot be directedly memory-mapped because
-    their datatype is not supported by numpy - the list includes
-    24-bit PCM, 8-bit µ-Law, and 8-bit A-law.
-
-    If ``allow_conversion`` is ``True``, the default, the result is
-    converted to a numpy type.  If it is ``False``, then the result is
-    not converted and returned as numpy array of raw bytes
-
   warn
     Programmers are sloppy so quite a lot of real-world WAVE files have
     recoverable errors in their format.  ``warn`` is the function used to
@@ -227,7 +207,7 @@ ARGUMENTS
 Class ``wavemap.ReadMap``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-(`wavemap/read.py, 18-86 <https://github.com/rec/wavemap/blob/master/wavemap/read.py#L18-L86>`_)
+(`wavemap/read.py, 18-84 <https://github.com/rec/wavemap/blob/master/wavemap/read.py#L18-L84>`_)
 
 Memory-map an existing WAVE file into a numpy vector or matrix
 
@@ -242,11 +222,10 @@ _____________________________
        mode: str='r',
        order: Union[str, NoneType]=None,
        always_2d: bool=False,
-       allow_conversion: bool=True,
        warn: Union[Callable, NoneType]='<function warn:  print to stderr>',
   )
 
-(`wavemap/read.py, 21-86 <https://github.com/rec/wavemap/blob/master/wavemap/read.py#L21-L86>`_)
+(`wavemap/read.py, 21-84 <https://github.com/rec/wavemap/blob/master/wavemap/read.py#L21-L84>`_)
 
 Memory-map an existing WAVE file into a numpy matrix.
 
@@ -289,15 +268,6 @@ ARGUMENTS
 
     If ``True``, mono WAVE files are treated the same as any other file
     and are mapped to a two-dimensional matrix with ``size=(N, 1)``.
-
-  allow_conversion
-    Some types of WAVE files cannot be directedly memory-mapped because
-    their datatype is not supported by numpy - the list includes
-    24-bit PCM, 8-bit µ-Law, and 8-bit A-law.
-
-    If ``allow_conversion`` is ``True``, the default, the result is
-    converted to a numpy type.  If it is ``False``, then the result is
-    not converted and returned as numpy array of raw bytes
 
   warn
     Programmers are sloppy so quite a lot of real-world WAVE files have
@@ -368,11 +338,11 @@ ARGUMENTS
 
   wavemap.convert(
        arr: numpy.ndarray,
-       dtype: numpy.dtype,
-       must_copy=False,
+       dtype: Union[numpy.dtype, NoneType],
+       must_copy: bool=False,
   )
 
-(`wavemap/convert.py, 4-72 <https://github.com/rec/wavemap/blob/master/wavemap/convert.py#L4-L72>`_)
+(`wavemap/convert.py, 6-77 <https://github.com/rec/wavemap/blob/master/wavemap/convert.py#L6-L77>`_)
 
 Returns a copy of a numpy array or matrix that represents audio data in
 another type, scaling and shifting as necessary.
@@ -382,9 +352,9 @@ ARGUMENTS
     A numpy darray representing an audio signal
 
   dtype
-    The numpy dtype to convert to
+    The numpy dtype to convert to - none means "no conversion"
 
   must_copy
     If true, ``arr`` is copied even if it is already the requested type
 
-(automatically generated by `doks <https://github.com/rec/doks/>`_ on 2021-02-20T14:10:32.545850)
+(automatically generated by `doks <https://github.com/rec/doks/>`_ on 2021-02-23T14:37:02.652534)

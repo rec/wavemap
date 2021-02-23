@@ -53,7 +53,7 @@ _WRITE_PARAMETERS = 'dtype', 'shape', 'sample_rate'
 _READ_PARAMETERS = 'order', 'always_2d'
 
 
-@xmod
+@xmod(mutable=True)
 @docs.update
 def wavemap(
     filename: str,
@@ -63,17 +63,16 @@ def wavemap(
     mode: str = 'r',
     order: Optional[str] = None,
     always_2d: bool = False,
-    allow_conversion: bool = True,
     #
     # Write parameters
     #
+    dtype: Optional[np.dtype] = None,
     shape: Union[None, int, tuple] = None,
     sample_rate: int = 0,
     roffset: int = 0,
     #
     # Read and write parameters
     #
-    dtype: Optional[np.dtype] = None,
     warn: Optional[Callable] = warn,
 ):
     """
@@ -114,7 +113,6 @@ def wavemap(
             mode=mode,
             order=order,
             always_2d=always_2d,
-            allow_conversion=allow_conversion,
             warn=warn,
         )
         if dtype is not None:

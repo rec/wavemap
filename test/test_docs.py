@@ -59,15 +59,6 @@ ARGUMENTS
     If `True`, mono WAVE files are treated the same as any other file
     and are mapped to a two-dimensional matrix with `size=(N, 1)`.
 
-  allow_conversion
-    Some types of WAVE files cannot be directedly memory-mapped because
-    their datatype is not supported by numpy - the list includes
-    24-bit PCM, 8-bit µ-Law, and 8-bit A-law.
-
-    If `allow_conversion` is `True`, the default, the result is
-    converted to a numpy type.  If it is `False`, then the result is
-    not converted and returned as numpy array of raw bytes
-
   warn
     Programmers are sloppy so quite a lot of real-world WAVE files have
     recoverable errors in their format.  `warn` is the function used to

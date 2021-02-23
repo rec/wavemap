@@ -1,3 +1,4 @@
+from numpy.lib.stride_tricks import as_strided
 from typing import Optional
 import numpy as np
 
@@ -87,3 +88,18 @@ def _normalize(arr, always):
     level = max(np.amax(arr), -np.amin(arr))
     if always or level > 1:
         arr.multiply(arr, level, out=arr)
+
+
+def _twenty_four_bit(shape, new, raw, itemsize):
+    # Unused code
+    frames = shape[0] * (shape[1] if len(shape) else 1)
+    assert not (frames % 4)
+
+    # https://stackoverflow.com/a/34128171/4383
+    raw = new(shape=(itemsize * frames // 4,), dtype='int32')
+    strided = as_strided(raw, strides=(12, 3,), shape=(frames, 4))
+    reshaped = np.reshape(strided, shape=shape)
+
+    result = reshaped & 0x00FFFFFF
+    result *= 0x100
+    return result
