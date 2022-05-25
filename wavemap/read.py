@@ -119,8 +119,15 @@ def _metadata(fp, warn, file_size):
 
 
 def _chunks(fp, warn, file_size):
+    class IncompleteChunk(ValueError):
+        pass
+
     def read_one(format):
-        s = fp.read(struct.calcsize(format))
+        size = struct.calcsize(format)
+        s = fp.read(size)
+        if len(s) < size:
+            raise IncompleteChunk()
+
         return struct.unpack('<' + format, s)[0]
 
     def read_tag():
@@ -147,7 +154,19 @@ def _chunks(fp, warn, file_size):
 
     while fp.tell() < file_size:
         begin = fp.tell()
-        tag, chunk_size = read_tag(), read_int()
+
+        try:
+            tag = read_tag()
+        except IncompleteChunk:
+            warn('Incomplete chunk: no tag')
+            break
+
+        try:
+            chunk_size = read_int()
+        except IncompleteChunk:
+            warn('Incomplete chunk: no size')
+            break
+
         fp.seek(chunk_size, 1)
         end = fp.tell()
         if end > file_size:
