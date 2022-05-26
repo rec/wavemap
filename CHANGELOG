@@ -1,3 +1,7 @@
+## v2.0.1 - 22/05/26
+
+* Fix crash on partial chunk at end of file
+
 ## v2.0.0 - 21/02/23
 
 * Completely remove automatic conversions
