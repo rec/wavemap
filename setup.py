@@ -31,7 +31,7 @@ if __name__ == '__main__':
         author_email='tom@swirly.com',
         url='https://github.com/rec/wavemap',
         packages=['wavemap', 'wavemap.structure'],
-        description='Memory map WAVE or raw audio files',
+        description='🌊 Memory map WAVE or raw audio files 🌊',
         long_description=open('README.rst').read(),
         license='MIT',
         classifiers=_classifiers,
