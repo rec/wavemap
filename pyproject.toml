@@ -3,7 +3,7 @@ name = "wavemap"
 version = "2.0.1"
 description = "🌊 Memory map WAVE or raw audio files 🌊"
 authors = [{ name = "Tom Ritchford", email = "tom@swirly.com" }]
-requires-python = ">=3.8.1,<4"
+requires-python = ">=3.10"
 readme = "README.rst"
 license = "MIT"
 classifiers = [
