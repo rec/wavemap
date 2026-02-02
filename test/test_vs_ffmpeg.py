@@ -8,8 +8,8 @@ import tdir
 import unittest
 import wavemap
 
-IS_TRAVIS = os.getenv('TRAVIS', '').lower().startswith('t')
-skip_if_travis = unittest.skipIf(IS_TRAVIS, 'Test does not work in travis')
+IS_TRAVIS = os.getenv("TRAVIS", "").lower().startswith("t")
+skip_if_travis = unittest.skipIf(IS_TRAVIS, "Test does not work in travis")
 
 
 @skip_if_travis
@@ -23,7 +23,7 @@ class TestCanonical(unittest.TestCase):
             w_in = wavemap(infile)
 
             outfile = Path(infile.name)
-            assert outfile.suffix == '.wav'
+            assert outfile.suffix == ".wav"
             fmt = _to_format(w_in.dtype)
             canonical(infile, outfile, fmt)
 
@@ -33,7 +33,7 @@ class TestCanonical(unittest.TestCase):
 
             if w_in.shape != w_out.shape:
                 li, ci, lo, co = w_in.shape + w_out.shape
-                assert ci == co, 'Channels'
+                assert ci == co, "Channels"
                 assert li > lo
                 assert li - lo < 2
 
@@ -45,15 +45,15 @@ class TestCanonical(unittest.TestCase):
 def canonical(i, o, fmt):
     o.parent.mkdir(parents=True, exist_ok=True)
     cmd = (
-        'ffmpeg',
-        '-y',
-        '-i',
+        "ffmpeg",
+        "-y",
+        "-i",
         str(i.absolute()),
-        '-c:a',
-        'pcm_' + fmt,
+        "-c:a",
+        "pcm_" + fmt,
         str(o.absolute()),
     )
-    print('$', *cmd)
+    print("$", *cmd)
     subprocess.run(cmd)
 
 
@@ -62,16 +62,16 @@ def canonical(i, o, fmt):
 
 def _to_format(dt, big_endian=False):
     if issubclass(dt.type, np.signedinteger):
-        ntype = 's'
+        ntype = "s"
     elif issubclass(dt.type, np.unsignedinteger):
-        ntype = 'u'
+        ntype = "u"
     else:
-        ntype = 'f'
+        ntype = "f"
 
     bits = dt.itemsize * 8
-    endian = '' if bits == 8 else 'be' if big_endian else 'le'
-    return f'{ntype}{bits}{endian}'
+    endian = "" if bits == 8 else "be" if big_endian else "le"
+    return f"{ntype}{bits}{endian}"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

@@ -14,8 +14,8 @@ WAVE_FORMATS = (
     WAVE_FORMAT_EXTENSIBLE,
 )
 
-TAG = '4s'
-SUBFORMAT = '14s'
+TAG = "4s"
+SUBFORMAT = "14s"
 
 CHUNK = Structure(ckID=TAG, cksize=INT32)
 RIFF = Structure(ckIDRiff=TAG, cksizeRiff=INT32, WAVEID=TAG)
@@ -58,8 +58,8 @@ NON_PCM = RIFF + FMT_NON_PCM + FACT + DATA
 assert PCM.size == 44
 assert NON_PCM.size == 58
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     d = list(locals().items())
     for k, v in d:
         if isinstance(v, Structure):
-            print(f'assert {k}.size == {v.size}')
+            print(f"assert {k}.size == {v.size}")

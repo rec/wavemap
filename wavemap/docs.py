@@ -15,9 +15,9 @@ Think of this as `self`.  (This is because you need to implement `__new__`
 and not `__init__` when deriving from `np.darray`.)
 """
 
-DTYPE = 'The numpy datatype of the samples in the file.'
+DTYPE = "The numpy datatype of the samples in the file."
 
-FILENAME = 'The name of the file being mapped'
+FILENAME = "The name of the file being mapped"
 
 ORDER = """
 Samples usually get laid out in into a `numpy.darray` with`
@@ -63,9 +63,9 @@ In mode `'w+'`, "write", the file is opened for write, and overwrites
 whatever else is there.
 """
 
-OFFSET = 'How many bytes in the file before the WAV data'
-ROFFSET = 'How many bytes in the file after the WAV data'
-SAMPLE_RATE = 'The sample rate in Hz (cycles per second)'
+OFFSET = "How many bytes in the file before the WAV data"
+ROFFSET = "How many bytes in the file after the WAV data"
+SAMPLE_RATE = "The sample rate in Hz (cycles per second)"
 
 SHAPE = """
 The shape of the resulting numpy.darray. Can be a tuple, or a positive
@@ -87,19 +87,19 @@ def arguments(*names, subs=None):
     names = [(i, subs.get(i, i).upper()) for i in names]
     missing = [n for (n, a) in names if a not in globals()]
     if missing:
-        raise ValueError(f'Cannot document arguments {missing}')
+        raise ValueError(f"Cannot document arguments {missing}")
 
-    yield 'ARGUMENTS'
+    yield "ARGUMENTS"
     for name, attr in names:
-        yield f'  {name}'
+        yield f"  {name}"
         for line in globals()[attr].strip().splitlines():
-            yield line and f'    {line}'
-        yield ''
+            yield line and f"    {line}"
+        yield ""
 
 
 def add_arguments(func, names, subs=None):
     params = arguments(*names, subs=subs)
-    func.__doc__ = func.__doc__.rstrip() + '\n\n' + '\n'.join(params)
+    func.__doc__ = func.__doc__.rstrip() + "\n\n" + "\n".join(params)
     return func
 
 

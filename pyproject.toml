@@ -16,6 +16,7 @@ dependencies = [
 auto = true
 source = 'wavemap/__init__.py'
 
+[tool.ruff]
 [dependency-groups]
 dev = [
     "coverage>=7.1.0,<8",

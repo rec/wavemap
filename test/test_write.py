@@ -9,14 +9,14 @@ import wavemap
 
 class TestWaveWrite(unittest.TestCase):
     def test_write1(self):
-        wm = wavemap(next(files.find('int16')))
+        wm = wavemap(next(files.find("int16")))
         assert wm.shape == (23493, 2)
 
     @tdir
     def test_write2(self):
-        wm, (b, b1, b2) = _find('int16', not True)
+        wm, (b, b1, b2) = _find("int16", not True)
         assert wm[0].shape == (23493, 2)
-        assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
+        assert len(b1) == len(b2), f"{len(b1)} == {len(b2)}"
         assert b1 == b2
         assert b
 
@@ -30,8 +30,8 @@ class TestWaveWrite(unittest.TestCase):
 
         import struct
 
-        (s1,) = struct.unpack('<I', sb[4:8])
-        (s2,) = struct.unpack('<I', b1[4:8])
+        (s1,) = struct.unpack("<I", sb[4:8])
+        (s2,) = struct.unpack("<I", b1[4:8])
         assert s1 != s2
         assert s1 == 94174
         assert s2 == 94008
@@ -39,9 +39,9 @@ class TestWaveWrite(unittest.TestCase):
 
     @tdir
     def test_int(self):
-        for filename in files.find('int'):
+        for filename in files.find("int"):
             (wm, wm1, wm2), (b, b1, b2) = _test(filename)
-            assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
+            assert len(b1) == len(b2), f"{len(b1)} == {len(b2)}"
             assert b1 == b2
             assert b
 
@@ -53,18 +53,18 @@ class TestWaveWrite(unittest.TestCase):
                 return
 
             if not sb[8:-1] == b1[8:-1]:
-                assert False, 'binaries differ'
+                assert False, "binaries differ"
 
-            (s1,) = struct.unpack('<I', sb[4:8])
-            (s2,) = struct.unpack('<I', b1[4:8])
+            (s1,) = struct.unpack("<I", sb[4:8])
+            (s2,) = struct.unpack("<I", b1[4:8])
             assert s1 != s2
 
     @tdir
     def test_float(self):
-        for filename in files.find('float'):
+        for filename in files.find("float"):
             # print(filename)
             (wm, wm1, wm2), (b, b1, b2) = _test(filename)
-            assert len(b1) == len(b2), f'{len(b1)} == {len(b2)}'
+            assert len(b1) == len(b2), f"{len(b1)} == {len(b2)}"
             assert b1 == b2
             assert b
 
@@ -86,7 +86,7 @@ def _test(filename, hard=False, assert_array_equal=assert_array_equal):
     assert_array_equal(wm1, wm2)
     wm2.flush()
 
-    localfile2 = Path(f'{filename.stem}-2{filename.suffix}')
+    localfile2 = Path(f"{filename.stem}-2{filename.suffix}")
     wm3 = wavemap.copy_to(wm2, localfile2)
     assert_array_equal(wm1, wm3)
     wm3.flush()
@@ -94,7 +94,7 @@ def _test(filename, hard=False, assert_array_equal=assert_array_equal):
     wm = wm1, wm2, wm3
     b = tuple(i.filename.read_bytes() for i in wm)
     file_sizes = tuple(w.filename.stat().st_size for w in wm)
-    byte_sizes = tuple(8 + struct.unpack('<I', i[4:8])[0] for i in b)
+    byte_sizes = tuple(8 + struct.unpack("<I", i[4:8])[0] for i in b)
 
     if hard:
         assert file_sizes == byte_sizes

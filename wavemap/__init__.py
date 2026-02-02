@@ -26,6 +26,7 @@ Typical usage:
     wm /= 2
     # Each sample in the file is scaled by half.
 """
+
 from . import docs
 from .convert import convert
 from .raw import RawMap, warn
@@ -36,20 +37,20 @@ import numpy as np
 import xmod
 
 __all__ = (
-    'wavemap',
-    'RawMap',
-    'ReadMap',
-    'WriteMap',
-    'copy_to',
-    'new_like',
-    'convert',
+    "wavemap",
+    "RawMap",
+    "ReadMap",
+    "WriteMap",
+    "copy_to",
+    "new_like",
+    "convert",
 )
 
 copy_to = WriteMap.copy_to
 new_like = WriteMap.new_like
-_DOKS = {warn: '<function warn: print to stderr>'}
-_WRITE_PARAMETERS = 'dtype', 'shape', 'sample_rate'
-_READ_PARAMETERS = 'order', 'always_2d'
+_DOKS = {warn: "<function warn: print to stderr>"}
+_WRITE_PARAMETERS = "dtype", "shape", "sample_rate"
+_READ_PARAMETERS = "order", "always_2d"
 
 
 @xmod(mutable=True)
@@ -59,7 +60,7 @@ def wavemap(
     #
     # Read parameters
     #
-    mode: str = 'r',
+    mode: str = "r",
     order: Optional[str] = None,
     always_2d: bool = False,
     #
@@ -80,18 +81,18 @@ def wavemap(
     Return an instance of `ReadMap` or `WriteMap`, depending on
     `mode`.
     """
-    if mode.startswith('w'):
+    if mode.startswith("w"):
         if not dtype:
-            raise ValueError('dtype must be set for write')
+            raise ValueError("dtype must be set for write")
         if not shape:
-            raise ValueError('shape must be set for write')
+            raise ValueError("shape must be set for write")
         if not sample_rate:
-            raise ValueError('sample_rate must be set for write')
+            raise ValueError("sample_rate must be set for write")
 
         if order:
-            raise ValueError('order cannot be set for write')
+            raise ValueError("order cannot be set for write")
         if always_2d:
-            raise ValueError('always_2d cannot be set for write')
+            raise ValueError("always_2d cannot be set for write")
 
         return WriteMap(
             filename=filename,
@@ -103,9 +104,9 @@ def wavemap(
         )
     else:
         if shape:
-            raise ValueError('shape cannot be set for write')
+            raise ValueError("shape cannot be set for write")
         if sample_rate:
-            raise ValueError('sample_rate cannot be set for write')
+            raise ValueError("sample_rate cannot be set for write")
 
         result = ReadMap(
             filename=filename,

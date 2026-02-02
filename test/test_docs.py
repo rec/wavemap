@@ -8,9 +8,9 @@ class TestDocs(unittest.TestCase):
         actual = inspect.getdoc(ReadMap.__new__)
         expected = READMAP_DOC
         if expected != actual:
-            print('expected', '------', '', *expected, sep='\n')
+            print("expected", "------", "", *expected, sep="\n")
             print
-            print('actual', '------', '', *actual, sep='\n')
+            print("actual", "------", "", *actual, sep="\n")
             if True:
                 assert expected == actual
             assert False

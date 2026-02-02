@@ -3,7 +3,7 @@ from numpy.core.numeric import uint8, ndarray, dtype
 from numpy.core.overrides import set_module
 import numpy as np
 
-__all__ = ['memmap']
+__all__ = ["memmap"]
 
 dtypedescr = dtype
 valid_filemodes = ["r", "c", "r+", "w+"]
@@ -17,7 +17,7 @@ mode_equivalents = {
 }
 
 
-@set_module('numpy')
+@set_module("numpy")
 class memmap(ndarray):
     """Create a memory-map to an array stored in a *binary* file on disk.
 
@@ -204,10 +204,10 @@ class memmap(ndarray):
         subtype,
         filename,
         dtype=uint8,
-        mode='r+',
+        mode="r+",
         offset=0,
         shape=None,
-        order='C',
+        order="C",
         roffset=0,
     ):
         # Import here to minimize 'import numpy' overhead
@@ -224,15 +224,13 @@ class memmap(ndarray):
                     )
                 ) from None
 
-        if mode == 'w+' and shape is None:
+        if mode == "w+" and shape is None:
             raise ValueError("shape must be given")
 
-        if hasattr(filename, 'read'):
+        if hasattr(filename, "read"):
             f_ctx = contextlib_nullcontext(filename)
         else:
-            f_ctx = open(
-                os_fspath(filename), ('r' if mode == 'c' else mode) + 'b'
-            )
+            f_ctx = open(os_fspath(filename), ("r" if mode == "c" else mode) + "b")
 
         with f_ctx as fid:
             fid.seek(0, 2)
@@ -260,14 +258,14 @@ class memmap(ndarray):
 
             bytes = int(offset + size * _dbytes + roffset)
 
-            if mode in ('w+', 'r+') and flen < bytes:
+            if mode in ("w+", "r+") and flen < bytes:
                 fid.seek(bytes - 1, 0)
-                fid.write(b'\0')
+                fid.write(b"\0")
                 fid.flush()
 
-            if mode == 'c':
+            if mode == "c":
                 acc = mmap.ACCESS_COPY
-            elif mode == 'r':
+            elif mode == "r":
                 acc = mmap.ACCESS_READ
             else:
                 acc = mmap.ACCESS_WRITE
@@ -304,7 +302,7 @@ class memmap(ndarray):
         return self
 
     def __array_finalize__(self, obj):
-        if hasattr(obj, '_mmap') and np.may_share_memory(self, obj):
+        if hasattr(obj, "_mmap") and np.may_share_memory(self, obj):
             self._mmap = obj._mmap
             self.filename = obj.filename
             self.offset = obj.offset
@@ -330,7 +328,7 @@ class memmap(ndarray):
         memmap
 
         """
-        if self.base is not None and hasattr(self.base, 'flush'):
+        if self.base is not None and hasattr(self.base, "flush"):
             self.base.flush()
 
     def __array_wrap__(self, arr, context=None):

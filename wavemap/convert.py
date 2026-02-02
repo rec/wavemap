@@ -3,9 +3,7 @@ from typing import Optional
 import numpy as np
 
 
-def convert(
-    arr: np.ndarray, dtype: Optional[np.dtype], must_copy: bool = False
-):
+def convert(arr: np.ndarray, dtype: Optional[np.dtype], must_copy: bool = False):
     """
     Returns a copy of a numpy array or matrix that represents audio data in
     another type, scaling and shifting as necessary.
@@ -27,8 +25,8 @@ def convert(
             arr = np.copy(arr)
         return arr
 
-    old_int = 'int' in str(old_t)
-    new_int = 'int' in str(new_t)
+    old_int = "int" in str(old_t)
+    new_int = "int" in str(new_t)
 
     if not (new_int or old_int):
         # Convert between floats
@@ -96,8 +94,15 @@ def _twenty_four_bit(shape, new, raw, itemsize):
     assert not (frames % 4)
 
     # https://stackoverflow.com/a/34128171/4383
-    raw = new(shape=(itemsize * frames // 4,), dtype='int32')
-    strided = as_strided(raw, strides=(12, 3,), shape=(frames, 4))
+    raw = new(shape=(itemsize * frames // 4,), dtype="int32")
+    strided = as_strided(
+        raw,
+        strides=(
+            12,
+            3,
+        ),
+        shape=(frames, 4),
+    )
     reshaped = np.reshape(strided, shape=shape)
 
     result = reshaped & 0x00FFFFFF

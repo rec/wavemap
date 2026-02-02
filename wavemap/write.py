@@ -10,7 +10,7 @@ DEFAULT_SAMPLE_RATE = 44100
 
 
 class WriteMap(raw.RawMap):
-    """"Memory-map a new wave file into a new numpy vector or matrix"""
+    """ "Memory-map a new wave file into a new numpy vector or matrix"""
 
     @docs.update
     def __new__(
@@ -50,7 +50,7 @@ class WriteMap(raw.RawMap):
             cls,
             filename=filename,
             dtype=dtype,
-            mode='w+',
+            mode="w+",
             shape=shape,
             offset=structure.size,
             roffset=roffset + pad,
@@ -62,10 +62,10 @@ class WriteMap(raw.RawMap):
 
         structure.pack_into(
             self._mmap,
-            ckIDRiff=b'RIFF',
+            ckIDRiff=b"RIFF",
             cksizeRiff=self.file_size - CHUNK_HEADER,
-            WAVEID=b'WAVE',
-            ckIDFmt=b'fmt ',
+            WAVEID=b"WAVE",
+            ckIDFmt=b"fmt ",
             cksizeFmt=fmt_structure.size - CHUNK_HEADER,
             wFormatTag=wFormatTag,
             nChannels=channel_count,
@@ -74,10 +74,10 @@ class WriteMap(raw.RawMap):
             nBlockAlign=frame_bytes,
             wBitsPerSample=sample_bytes * 8,
             cbSize=0,  # Non PCM
-            ckIDFact=b'fact',
+            ckIDFact=b"fact",
             cksizeFact=4,
             dwSampleLength=channel_count * frame_count,
-            ckIDData=b'data',
+            ckIDData=b"data",
             cksizeData=total_frame_bytes,
         )
 
@@ -93,10 +93,10 @@ class WriteMap(raw.RawMap):
         warn: Optional[Callable] = raw.warn,
     ):
         if sample_rate is None:
-            sample_rate = getattr(arr, 'sample_rate', DEFAULT_SAMPLE_RATE)
+            sample_rate = getattr(arr, "sample_rate", DEFAULT_SAMPLE_RATE)
 
         if roffset is None:
-            roffset = getattr(arr, 'roffset', 0)
+            roffset = getattr(arr, "roffset", 0)
 
         return cls(filename, arr.dtype, arr.shape, sample_rate, roffset, warn)
 
@@ -110,5 +110,5 @@ class WriteMap(raw.RawMap):
         warn: Optional[Callable] = raw.warn,
     ):
         wm = cls.new_like(arr, filename, sample_rate, roffset, warn)
-        np.copyto(src=arr, dst=wm, casting='no')
+        np.copyto(src=arr, dst=wm, casting="no")
         return wm
