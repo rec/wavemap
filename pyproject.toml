@@ -27,10 +27,12 @@ source = 'wavemap/__init__.py'
 [dependency-groups]
 dev = [
     "coverage>=7.1.0,<8",
-    "flake8>=6.0.0,<7",
     "pytest>=7.2.1,<8",
+    "pyupgrade>=3.21.2",
+    "ruff>=0.14.14",
     "stroll>=1.1.0,<2",
     "tdir>=1.4.1,<2",
+    "ty>=0.0.14",
 ]
 
 [tool.uv]
@@ -42,12 +44,12 @@ module-root = ""
 requires = ["uv_build>=0.9.0,<0.10.0"]
 build-backend = "uv_build"
 [tool.coverage.run]
-branch = "True"
+branch = true
 source = "wavemap"
 
 [tool.coverage.report]
 fail_under = "68"
-skip_covered = "True"
+skip_covered = true
 exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", "raise NotImplementedError"]
 
 [tool.mypy]
