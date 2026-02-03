@@ -1,9 +1,11 @@
-from . import docs
-from . import raw
-from .structure import wave
-from .structure.wave import PCM, NON_PCM, FMT_PCM, FMT_NON_PCM
-from typing import Callable, Optional, Type, Union
+from typing import Optional, Type, Union
+from collections.abc import Callable
+
 import numpy as np
+
+from . import docs, raw
+from .structure import wave
+from .structure.wave import FMT_NON_PCM, FMT_PCM, NON_PCM, PCM
 
 CHUNK_HEADER = 8
 DEFAULT_SAMPLE_RATE = 44100
@@ -14,13 +16,13 @@ class WriteMap(raw.RawMap):
 
     @docs.update
     def __new__(
-        cls: Type,
+        cls: type,
         filename: str,
         dtype: np.dtype,
-        shape: Union[None, int, tuple],
+        shape: None | int | tuple,
         sample_rate: int,
         roffset: int = 0,
-        warn: Optional[Callable] = raw.warn,
+        warn: Callable | None = raw.warn,
     ):
         """
         Open a memory-mapped WAVE file in write mode and overwrite any existing
@@ -85,12 +87,12 @@ class WriteMap(raw.RawMap):
 
     @classmethod
     def new_like(
-        cls: Type,
+        cls: type,
         arr: np.ndarray,
         filename: str,
-        sample_rate: Optional[int] = None,
-        roffset: Optional[int] = None,
-        warn: Optional[Callable] = raw.warn,
+        sample_rate: int | None = None,
+        roffset: int | None = None,
+        warn: Callable | None = raw.warn,
     ):
         if sample_rate is None:
             sample_rate = getattr(arr, "sample_rate", DEFAULT_SAMPLE_RATE)
@@ -102,12 +104,12 @@ class WriteMap(raw.RawMap):
 
     @classmethod
     def copy_to(
-        cls: Type,
+        cls: type,
         arr: np.ndarray,
         filename: str,
-        sample_rate: Optional[int] = None,
-        roffset: Optional[int] = None,
-        warn: Optional[Callable] = raw.warn,
+        sample_rate: int | None = None,
+        roffset: int | None = None,
+        warn: Callable | None = raw.warn,
     ):
         wm = cls.new_like(arr, filename, sample_rate, roffset, warn)
         np.copyto(src=arr, dst=wm, casting="no")

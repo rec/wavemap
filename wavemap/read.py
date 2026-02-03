@@ -1,8 +1,11 @@
+import struct
+from typing import Optional, Type
+from collections.abc import Callable
+
+import numpy as np
+
 from . import docs, raw
 from .structure import wave
-from typing import Callable, Optional, Type
-import numpy as np
-import struct
 
 FLOAT_BITS_PER_SAMPLE = {32, 64}
 PCM_BITS_PER_SAMPLE = {8, 16, 24, 32, 64}
@@ -20,12 +23,12 @@ class ReadMap(raw.RawMap):
 
     @docs.update(mode="READ_ONLY_MODE")
     def __new__(
-        cls: Type,
+        cls: type,
         filename: str,
         mode: str = "r",
-        order: Optional[str] = None,
+        order: str | None = None,
         always_2d: bool = False,
-        warn: Optional[Callable] = raw.warn,
+        warn: Callable | None = raw.warn,
     ):
         # Documentation for parameters is in docs.py
         """Memory-map an existing WAVE file into a numpy matrix."""

@@ -1,9 +1,10 @@
-from numpy.lib.stride_tricks import as_strided
 from typing import Optional
+
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 
 
-def convert(arr: np.ndarray, dtype: Optional[np.dtype], must_copy: bool = False):
+def convert(arr: np.ndarray, dtype: np.dtype | None, must_copy: bool = False):
     """
     Returns a copy of a numpy array or matrix that represents audio data in
     another type, scaling and shifting as necessary.

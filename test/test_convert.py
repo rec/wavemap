@@ -1,6 +1,8 @@
-from numpy.testing import assert_array_equal
-import numpy as np
 import unittest
+
+import numpy as np
+from numpy.testing import assert_array_equal
+
 import wavemap
 
 

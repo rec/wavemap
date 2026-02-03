@@ -1,4 +1,4 @@
-from .structure import Structure, INT16, INT32
+from .structure import INT16, INT32, Structure
 
 WAVE_FORMAT_PCM = 0x0001
 WAVE_FORMAT_IEEE_FLOAT = 0x0003

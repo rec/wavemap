@@ -1,6 +1,7 @@
-from wavemap import ReadMap
 import inspect
 import unittest
+
+from wavemap import ReadMap
 
 
 class TestDocs(unittest.TestCase):
@@ -9,7 +10,7 @@ class TestDocs(unittest.TestCase):
         expected = READMAP_DOC
         if expected != actual:
             print("expected", "------", "", *expected, sep="\n")
-            print
+            print()
             print("actual", "------", "", *actual, sep="\n")
             if True:
                 assert expected == actual

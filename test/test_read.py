@@ -1,6 +1,8 @@
-from . import files
 import unittest
+
 import wavemap
+
+from . import files
 
 
 class TestWaveMap(unittest.TestCase):

@@ -27,14 +27,17 @@ Typical usage:
     # Each sample in the file is scaled by half.
 """
 
+from typing import Optional, Union
+from collections.abc import Callable
+
+import numpy as np
+import xmod
+
 from . import docs
 from .convert import convert
 from .raw import RawMap, warn
 from .read import ReadMap as ReadMap
 from .write import WriteMap as WriteMap
-from typing import Callable, Optional, Union
-import numpy as np
-import xmod
 
 __all__ = (
     "wavemap",
@@ -61,19 +64,19 @@ def wavemap(
     # Read parameters
     #
     mode: str = "r",
-    order: Optional[str] = None,
+    order: str | None = None,
     always_2d: bool = False,
     #
     # Write parameters
     #
-    dtype: Optional[np.dtype] = None,
-    shape: Union[None, int, tuple] = None,
+    dtype: np.dtype | None = None,
+    shape: None | int | tuple = None,
     sample_rate: int = 0,
     roffset: int = 0,
     #
     # Read and write parameters
     #
-    warn: Optional[Callable] = warn,
+    warn: Callable | None = warn,
 ):
     """
     Memory map a WAVE file to a `numpy` array

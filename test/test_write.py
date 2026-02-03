@@ -1,10 +1,13 @@
-from . import files
-from numpy.testing import assert_array_equal
-from pathlib import Path
 import struct
-import tdir
 import unittest
+from pathlib import Path
+
+import tdir
+from numpy.testing import assert_array_equal
+
 import wavemap
+
+from . import files
 
 
 class TestWaveWrite(unittest.TestCase):

@@ -1,8 +1,11 @@
+import sys
+from typing import Optional, Union
+from collections.abc import Callable
+
+import numpy as np
+
 from . import docs
 from .memmap import memmap
-from typing import Callable, Optional, Union
-import numpy as np
-import sys
 
 int24 = "int24"
 
@@ -19,13 +22,13 @@ class RawMap(memmap):
         cls,
         filename: str,
         dtype: np.dtype,
-        shape: Union[tuple, int, None] = None,
+        shape: tuple | int | None = None,
         mode: str = "r",
         offset: int = 0,
         roffset: int = 0,
-        order: Optional[str] = None,
+        order: str | None = None,
         always_2d: bool = False,
-        warn: Optional[Callable] = warn,
+        warn: Callable | None = warn,
     ):
         """Memory map raw audio data from a disk file into a numpy matrix"""
         # Documentation for parameters is in docs.py

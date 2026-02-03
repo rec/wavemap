@@ -1,8 +1,11 @@
-from . import files
-from pathlib import Path
-import tdir
 import unittest
+from pathlib import Path
+
+import tdir
+
 import wavemap
+
+from . import files
 
 
 class TestExpected(unittest.TestCase):

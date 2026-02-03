@@ -1,7 +1,7 @@
 """Better struct"""
 
-from argparse import Namespace
 import struct
+from argparse import Namespace
 
 INT16 = "H"
 INT32 = "I"

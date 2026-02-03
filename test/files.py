@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import stroll
+
 import wavemap
 
 FILE_ROOT = Path(__file__).parent

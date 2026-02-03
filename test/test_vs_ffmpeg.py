@@ -1,12 +1,15 @@
-from . import files
-from numpy.testing import assert_array_equal
-from pathlib import Path
-import numpy as np
 import os
 import subprocess
-import tdir
 import unittest
+from pathlib import Path
+
+import numpy as np
+import tdir
+from numpy.testing import assert_array_equal
+
 import wavemap
+
+from . import files
 
 IS_TRAVIS = os.getenv("TRAVIS", "").lower().startswith("t")
 skip_if_travis = unittest.skipIf(IS_TRAVIS, "Test does not work in travis")
