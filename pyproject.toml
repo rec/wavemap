@@ -28,14 +28,6 @@ dev = [
     "ty>=0.0.14",
 ]
 
-[tool.uv]
-
-[tool.uv.build-backend]
-module-root = ""
-
-[build-system]
-requires = ["uv_build>=0.9.0,<0.10.0"]
-build-backend = "uv_build"
 [tool.coverage.run]
 branch = true
 source = "wavemap"
@@ -45,3 +37,18 @@ fail_under = "68"
 skip_covered = true
 exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", "raise NotImplementedError"]
 
+
+[tool.poetry]
+name = "wavemap"
+version = "0.1.0"
+description = "🌊 Memory map WAVE or raw audio files 🌊"
+authors = ["Tom Ritchford <tom@swirly.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
