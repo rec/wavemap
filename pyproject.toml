@@ -1,6 +1,6 @@
 [project]
 name = "wavemap"
-version = "2.1.0"
+version = "2.2.0"
 description = "🌊 Memory map WAVE or raw audio files 🌊"
 authors = [{ name = "Tom Ritchford", email = "tom@swirly.com" }]
 requires-python = ">=3.10"
@@ -40,7 +40,7 @@ exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", 
 
 [tool.poetry]
 name = "wavemap"
-version = "0.1.0"
+version = "2.2.0"
 description = "🌊 Memory map WAVE or raw audio files 🌊"
 authors = ["Tom Ritchford <tom@swirly.com>"]
 readme = "README.md"
